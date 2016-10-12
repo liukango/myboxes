@@ -1,0 +1,68 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+root_passwd = 'kk'
+
+vms = {
+  :controller => ['2', '4096', '10.0.0.11', 'yes', 'null'],
+  :compute1 => ['2', '2048', '10.0.0.31', 'yes', 'null'],
+  :block1 => ['2', '1536', '10.0.0.41', 'no', 'null'],
+  :object1 => ['2', '1536', '10.0.0.51', 'no', 'null'],
+  :object2 => ['2', '1536', '10.0.0.52', 'no', 'null'],
+}
+
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://atlas.hashicorp.com/search.
+  config.vm.box = "ubuntu/trusty64"
+  
+  # Setup common configurations
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--groups", "/openstack"]
+    vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+  end
+  
+  # Setup specific configurations
+  vms.each do |m_name, m_config|
+    config.vm.define "#{m_name}" do |m|
+      m.vm.hostname = "#{m_name}"
+      if "#{m_name}" == "controller" then
+        m.vm.network "forwarded_port", guest: 80, guest_ip: "#{m_config[2]}", host: 8080, host_ip: "127.0.0.1"
+      end
+      m.vm.network "private_network", ip: "#{m_config[2]}"
+      if "#{m_config[3]}" == "yes" then
+        m.vm.network "public_network"
+      end
+      m.vm.provider "virtualbox" do |vb|
+        vb.name = "#{m_name}"
+	vb.cpus = "#{m_config[0]}"
+	vb.memory = "#{m_config[1]}"
+      end
+      m.vm.provision "shell" do |s|
+        s.path = "provision_init.sh"
+	s.args = "#{root_passwd}"
+      end
+      m.vm.provision "shell", path: "provision_always.sh", run: "always"
+      if "#{m_config[4]}" != "null" then
+        m.vm.provision "shell", path: "#{m_config[4]}"
+      end
+    end
+  end
+
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   apt-get update
+  #   apt-get upgrade
+  # SHELL
+  
+end

@@ -1,0 +1,96 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+memory_capacity = {
+  :controller => 4096,
+  :compute1 => 2048,
+  :block1 => 1536,
+  :object1 => 1536,
+  :object2 => 1536
+}
+private_networks = {
+  :controller => '10.0.0.11',
+  :compute1 => '10.0.0.31',
+  :block1 => '10.0.0.41',
+  :object1 => '10.0.0.51',
+  :object2 => '10.0.0.52'
+}
+public_networks = {
+  :controller => false,
+  :compute1 => false
+}
+root_passwd = 'kk'
+provision_shell = {
+  :controller => 'controller.sh',
+  :compute1 => 'compute1.sh'
+}
+
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://atlas.hashicorp.com/search.
+  config.vm.box = "ubuntu/trusty64"
+
+  
+  # Setup common configurations
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 2
+    vb.customize ["modifyvm", :id, "--groups", "/openstack"]
+    vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+  end
+
+  memory_capacity.each do |m_name, memory_capacity|
+    config.vm.define "#{m_name}" do |m|
+      m.vm.provider "virtualbox" do |vb|
+        vb.memory = "#{memory_capacity}"
+      end
+    end
+  end
+
+  # Setup private networks
+  private_networks.each do |m_name, m_ip|
+    config.vm.define "#{m_name}" do |m|
+      m.vm.hostname = "#{m_name}"
+      m.vm.provider "virtualbox" do |vb|
+        vb.name = "#{m_name}"
+      end
+      m.vm.network "private_network", ip: "#{m_ip}"
+    end
+  end
+
+  # Setup public networks
+  public_networks.each do |m_name, m_type|
+    config.vm.define "#{m_name}" do |m|
+      m.vm.network "public_network", auto_config: "#{m_type}"
+    end
+  end
+
+  
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   apt-get update
+  #   apt-get upgrade
+  # SHELL
+#  config.vm.provision "shell" do |s|
+#    s.path = "bootstrap.sh"
+#    s.args = "#{root_passwd}"
+#  end
+  
+  # Provision respectively
+#  provision_shell.each do |m_name, p_path|
+#    config.vm.define "#{m_name}" do |m|
+#      m.vm.provision "shell", path: "#{p_path}"
+#    end
+#  end
+
+end
