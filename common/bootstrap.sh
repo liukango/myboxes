@@ -5,13 +5,11 @@
 . /common/env.sh
 
 # Change password for root and permit root login
-sudo -s
-echo "[INFO] Set password for root"
+sudo -s << EOF
+
 (echo "$PASSWORD";sleep 1;echo "$PASSWORD") | passwd root &> /dev/null
-echo "[INFO] Permit root login via SSH"
 sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
 sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
-echo "[INFO] Restart SSH service"
 service ssh restart
 
 # Add DNS configuration
@@ -22,3 +20,8 @@ echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 mv /etc/apt/sources.list /etc/apt/sources.list.bk
 cp /common/sources.list /etc/apt/ 
 apt-get update
+
+# Use Douban pypi mirror
+cp /common/pip.conf /etc/
+
+EOF
