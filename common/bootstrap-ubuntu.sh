@@ -1,8 +1,11 @@
 #!/bin/bash
 
 
-# Load common envirenment virables
-. /common/env.sh
+# Common envirenment virables
+PASSWORD="kk"
+APT_MIRROR_HOST="mirrors.aliyun.com"
+PYPI_MIRROR_URL="http://pypi.douban.com"
+PYPI_MIRROR_HOST="pypi.douban.com"
 
 # Change password for root and permit root login
 sudo -s << EOF
@@ -16,12 +19,12 @@ service ssh restart
 echo 'nameserver 8.8.8.8' > /etc/resolvconf/resolv.conf.d/base
 echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 
-# Use Aliyun mirror
-mv /etc/apt/sources.list /etc/apt/sources.list.bk
-cp /common/sources.list /etc/apt/ 
+# Use Domestic mirror
+cp /etc/apt/sources.list /etc/apt/sources.list.bk
+sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list
 apt-get update
 
-# Use Douban pypi mirror
-cp /common/pip.conf /etc/
+# Use Domestic pypi mirror
+echo -e "[global]\nindex-url = ${PYPI_MIRROR_URL}\ntrusted-host = ${PYPI_MIRROR_HOST}" > /etc/pip.conf
 
 EOF

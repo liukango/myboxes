@@ -5,4 +5,5 @@ Virtual machines list as follows:
 
 | name | OS | hostname | IP | vCPUs | Memory |
 | --- | --- | --- | --- | --- | --- |
-| devstack | ubuntu/trusty64 | devstack.kang.me | 192.168.1.180 | 4 | 8192 |
+| devstack-mitaka | ubuntu/trusty64 | devstack-mitaka | 10.1.1.101 | 4 | 8192 |
+| devstack-newton | ubuntu/xenial64 | devstack-newton | 10.1.1.102 | 4 | 8192 |
