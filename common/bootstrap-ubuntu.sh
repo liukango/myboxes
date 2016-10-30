@@ -4,8 +4,7 @@
 # Common envirenment virables
 PASSWORD="kk"
 APT_MIRROR_HOST="mirrors.aliyun.com"
-PYPI_MIRROR_URL="http://pypi.douban.com"
-PYPI_MIRROR_HOST="pypi.douban.com"
+PYPI_MIRROR_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
 
 # Change password for root and permit root login
 sudo -s << EOF
@@ -25,6 +24,6 @@ sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MI
 apt-get update
 
 # Use Domestic pypi mirror
-echo -e "[global]\nindex-url = ${PYPI_MIRROR_URL}\ntrusted-host = ${PYPI_MIRROR_HOST}" > /etc/pip.conf
+echo -e "[global]\nindex-url = ${PYPI_MIRROR_URL}" > /etc/pip.conf
 
 EOF
