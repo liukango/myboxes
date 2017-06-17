@@ -2,7 +2,7 @@
 
 
 # Common envirenment virables
-PASSWORD="kk"
+PASSWORD=${1-:"kk"}
 APT_MIRROR_HOST="mirrors.aliyun.com"
 PYPI_MIRROR_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
 

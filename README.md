@@ -7,3 +7,4 @@ Virtual machines list as follows:
 | --- | --- | --- | --- | --- | --- |
 | devstack-mitaka | ubuntu/trusty64 | devstack-mitaka | 10.1.1.101 | 4 | 8192 |
 | devstack-newton | ubuntu/xenial64 | devstack-newton | 10.1.1.102 | 4 | 8192 |
+| devstack-ocata | ubuntu/xenial64 | devstack-ocata | 10.1.1.103 | 4 | 8192 |
