@@ -10,8 +10,9 @@
 
 # 虚拟机列表：
 
-| name | OS | hostname | IP | vCPUs | Memory | Notes |
+| name | OS | hostname | IP | vCPUs | Memory | Directory | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| devstack-mitaka | ubuntu/trusty64 | devstack-mitaka | 10.1.1.101 | 4 | 8192 | Deprecated |
-| devstack-newton | ubuntu/xenial64 | devstack-newton | 10.1.1.102 | 4 | 8192 | |
-| devstack-ocata | ubuntu/xenial64 | devstack-ocata | 10.1.1.103 | 4 | 8192 | |
+| node[0-n] | ubuntu/xenial64 | node[0-n]| 10.1.0.10[0-n] | 2 | 1536 | testnodes | Used for tempary test |
+| devstack-mitaka | ubuntu/trusty64 | devstack-mitaka | 10.1.1.101 | 4 | 8192 | devstacks | Deprecated |
+| devstack-newton | ubuntu/xenial64 | devstack-newton | 10.1.1.102 | 4 | 8192 | devstacks | |
+| devstack-ocata | ubuntu/xenial64 | devstack-ocata | 10.1.1.103 | 4 | 8192 | devstacks | |
