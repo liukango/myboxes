@@ -1,0 +1,111 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+MYPASSWD = "kk"
+
+# 指定VagrantFile版本
+Vagrant.configure("2") do |config|
+
+### config.vm
+
+  # 指定镜像box
+  config.vm.box = "ubuntu/xenial64"
+  # config.vm.box_url = "http://boxrepo.io/test.box"
+  # config.vm.box_url = "file:///tmp/test.box"
+  # 指定镜像版本，默认为">=0"
+  # config.vm.box_version >= 1.0,<1.5
+
+  # 检查box是否有更新，默认检查
+  config.vm.box_check_update = false
+
+  # 配置启动时间（秒），从启动到可访问的时间，默认300秒
+  # config.vm.boot_timeout = 500
+  # 配置关机时间（秒），默认为60秒
+  # config.vm.graceful_halt_timeout = 80
+
+  # 配置操作系统主机名（注：vagrant默认虚拟机为linux，可通过config.vm.guest配置）
+  config.vm.hostname = "template"
+
+  # 配置端口转发
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # 通过IP限制端口转发权限
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+  # 配置可用端口范围，默认为2200..2250
+  # config.vm.usable_port_range
+
+  # 创建一个private network，从而宿主机可以使用这个IP访问虚拟机
+  config.vm.network "private_network", ip: "10.1.0.100"
+
+  # 创建一个public network，通常使用bridged network，即桥接网络，与宿主机位于同一网段
+  # config.vm.network "public_network", ip: "192.168.0.234"
+  # config.vm.network "public_network", use_dhcp_assigned_default_route: true
+
+  # 共享目录，两个参数先后为宿主机路径和虚拟机路径
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+  # Provider相关的配置，下边例子为virtualbox
+  #
+  config.vm.provider "virtualbox" do |vb|
+    # 启动虚拟机时是否打开virtualbox界面
+    # vb.gui = true
+    vb.name = "template"
+    vb.cpus = 2
+    vb.memory = "1024"
+    vb.customize ["modifyvm", :id, "--groups", "/devstack"]
+  end
+
+  # provisioning，在以下时候运行：
+  #   1. 初次vagrant up时运行
+  #   2. 使用--provision参数，指定特定provision类型，可以使用比如"vagrant up --provision-with shell"
+  #   3. 使用vagrant provision命令
+  #   4. 使用vagrant reload --provison命令时
+  # 通过--no-provison指定不进行provisioning
+  # 注意：provision顺序为outside in，即先执行公共的provision，然后执行各个vm的provison
+  # 支持shell, Puppet, Chef, Ansible, Salt, Docker
+  #
+  # 例子 - Shell：
+  #
+  # config.vm.provision "hello", type: "shell", inline: "echo hello1", run: "always"
+  #
+  # vagrant 1.7 后可以给provision取名
+  # config.vm.provision "bootstrap", type: "shell" do |s|
+  #   s.inline = "echo $1"
+  #   s.args = ["hello, world!"]
+  # end
+  #
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   apt-get update
+  #   apt-get install -y git
+  # SHELL
+
+
+
+  # 配置虚拟机启动完成后显示的信息
+  config.vm.post_up_message = "启动成功！"
+
+### config.ssh
+
+  # config.ssh.username = "root"
+  # config.ssh.password = "#{MYPASSWD}"
+  # config.ssh.host
+  # config.ssh.port = 22
+  # config.ssh.guest_port = 2200
+  # config.ssh.private_key_path
+  # config.ssh.insert_key = true, 默认true
+  # config.ssh.keep_alive = true，如果true，则没5秒钟发包保持连接
+  # config.ssh.shell = "bash -l"，指定shell类型，默认是"bash -l"
+  # config.ssh.sudo_command = "sudo -E -H %c"，%c会被用实际命令替换
+
+
+### multinode
+  config.vm.define "node1" do |node1|
+    node1.vm.hostname = "node1"
+    node1.vm.network "private_network", ip: "10.1.0.101"
+    node1.vm.provider "virtualbox" do |vb|
+      vb.name = "node1"
+      vb.memory = "2048"
+    end
+  end
+
+end
