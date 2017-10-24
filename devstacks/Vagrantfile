@@ -1,11 +1,13 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-#vms = {
-#  :ocata  => ['4', '8192', '10.1.1.103'],
-#  :newton => ['4', '8192', '10.1.1.102'],
-#  :mitaka => ['4', '8192', '10.1.1.101'],
-#}
+vms = {
+  :ocata  => ['4', '8192', '10.1.1.103'],
+  :newton => ['4', '8192', '10.1.1.102'],
+  :mitaka => ['4', '8192', '10.1.1.101'],
+}
+
+root_passwd = "kk"
 
 Vagrant.configure("2") do |config|
 
@@ -15,62 +17,66 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--groups", "/devstack"]
   end
 
-  config.vm.define "ocata" do |m|
-    m.vm.hostname = "devstack-ocata"
-    m.vm.network "private_network", ip: "10.1.1.103"
-    m.vm.provider "virtualbox" do |vb|
-      vb.name = "devstack-ocata"
-      vb.memory = "8192"
-      vb.cpus = 4
-    end
-    m.vm.provision "shell" do |s|
-      s.path = "bootstrap.sh"
-      s.args = ["ocata","10.1.1.103"]
-    end
-  end
-
-  config.vm.define "newton" do |m|
-    m.vm.hostname = "devstack-newton"
-    m.vm.network "private_network", ip: "10.1.1.102"
-    m.vm.provider "virtualbox" do |vb|
-      vb.name = "devstack-newton"
-      vb.memory = "8192"
-      vb.cpus = 4
-    end
-    m.vm.provision "shell" do |s|
-      s.path = "bootstrap.sh"
-      s.args = ["newton","10.1.1.102"]
-    end
-  end
-
-  config.vm.define "mitaka" do |m|
-    m.vm.hostname = "devstack-mitaka"
-    m.vm.network "private_network", ip: "10.1.1.101"
-    m.vm.provider "virtualbox" do |vb|
-      vb.name = "devstack-mitaka"
-      vb.memory = "8192"
-      vb.cpus = 4
-    end
-    m.vm.provision "shell" do |s|
-      s.path = "bootstrap.sh"
-      s.args = ["mitaka","10.1.1.101"]
-    end
-  end
-
-#  vms.each do |m_name, m_config|
-#    config.vm.define "#{m_name}" do |m|
-#      m.vm.hostname = "devstack-#{m_name}"
-#      m.vm.network "private_network", ip: "#{m_config[2]}"
-#      m.vm.provider "virtualbox" do |vb|
-#        vb.name = "devstack-#{m_name}"
-#        vb.memory = "#{m_config[1]}"
-#        vb.cpus = "#{m_config[0]}"
-#      end
-#      m.vm.provision "shell" do |s|
-#        s.path = "bootstrap.sh"
-#	s.args = ["#{m_name}","#{m_config[2]}"]
-#      end
+#  config.vm.define "ocata" do |m|
+#    m.vm.hostname = "devstack-ocata"
+#    m.vm.network "private_network", ip: "10.1.1.103"
+#    m.vm.provider "virtualbox" do |vb|
+#      vb.name = "devstack-ocata"
+#      vb.memory = "8192"
+#      vb.cpus = 4
+#    end
+#    m.vm.provision "shell" do |s|
+#      s.path = "bootstrap.sh"
+#      s.args = ["ocata","10.1.1.103"]
 #    end
 #  end
+#
+#  config.vm.define "newton" do |m|
+#    m.vm.hostname = "devstack-newton"
+#    m.vm.network "private_network", ip: "10.1.1.102"
+#    m.vm.provider "virtualbox" do |vb|
+#      vb.name = "devstack-newton"
+#      vb.memory = "8192"
+#      vb.cpus = 4
+#    end
+#    m.vm.provision "shell" do |s|
+#      s.path = "bootstrap.sh"
+#      s.args = ["newton","10.1.1.102"]
+#    end
+#  end
+#
+#  config.vm.define "mitaka" do |m|
+#    m.vm.hostname = "devstack-mitaka"
+#    m.vm.network "private_network", ip: "10.1.1.101"
+#    m.vm.provider "virtualbox" do |vb|
+#      vb.name = "devstack-mitaka"
+#      vb.memory = "8192"
+#      vb.cpus = 4
+#    end
+#    m.vm.provision "shell" do |s|
+#      s.path = "bootstrap.sh"
+#      s.args = ["mitaka","10.1.1.101"]
+#    end
+#  end
+
+  vms.each do |m_name, m_config|
+    config.vm.define "#{m_name}" do |m|
+      m.vm.hostname = "devstack-#{m_name}"
+      m.vm.network "private_network", ip: "#{m_config[2]}"
+      m.vm.provider "virtualbox" do |vb|
+        vb.name = "devstack-#{m_name}"
+        vb.memory = "#{m_config[1]}"
+        vb.cpus = "#{m_config[0]}"
+      end
+      m.vm.provision "shell" do |s|
+        s.path = "../data/scripts/bootstrap-ubuntu.sh"
+        s.args = [root_passwd]
+      end
+      m.vm.provision "shell" do |s|
+        s.path = "bootstrap.sh"
+        s.args = ["#{m_name}","#{m_config[2]}"]
+      end
+    end
+  end
   
 end
