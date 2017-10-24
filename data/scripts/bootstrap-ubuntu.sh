@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Common envirenment virables
-PASSWORD="kk"
+PASSWORD=${1:-"ubuntu"}
 APT_MIRROR_HOST="mirrors.aliyun.com"
 PYPI_MIRROR_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
 
@@ -10,26 +10,16 @@ sudo -s << EOF
 
 (echo "$PASSWORD";sleep 1;echo "$PASSWORD") | passwd root &> /dev/null
 
-sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
-sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
-service ssh restart
-
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
-cat /tmp/my_id_rsa.pub >> /home/ubuntu/.ssh/authorized_keys
-cat /tmp/my_id_rsa.pub >> /root/.ssh/authorized_keys
-rm -f /tmp/my_id_rsa.pub
-chmod 600 /root/.ssh/authorized_keys
-
 # Add DNS configuration
-echo 'nameserver 8.8.8.8' > /etc/resolvconf/resolv.conf.d/base
-echo 'nameserver 8.8.8.8' > /etc/resolv.conf
+#echo 'nameserver 8.8.8.8' > /etc/resolvconf/resolv.conf.d/base
+#echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 
 # Use Domestic mirror
 cp /etc/apt/sources.list /etc/apt/sources.list.bk
 sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list
 apt-get update
 apt-get upgrade -y
+apt-get install -y $2
 
 # Use Domestic pypi mirror
 echo -e "[global]\nindex-url = ${PYPI_MIRROR_URL}" > /etc/pip.conf
