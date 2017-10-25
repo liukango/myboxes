@@ -4,11 +4,11 @@
 ### 虚拟机环境配置
 # 1. 定义虚拟机配置: box, cpus, mem, ip(private)
 vms = {
-  :docker-node1 => ['ubuntu/xenial64', '2', '1536', '10.1.0.111'],
-  :docker-node2 => ['ubuntu/xenial64', '2', '1536', '10.1.0.112'],
-  :docker-node3 => ['ubuntu/xenial64', '2', '1536', '10.1.0.113'],
+  :dockernode1 => ['ubuntu/xenial64', '2', '1536', '10.1.0.111'],
+  :dockernode2 => ['ubuntu/xenial64', '2', '1536', '10.1.0.112'],
+  :dockernode3 => ['ubuntu/xenial64', '2', '1536', '10.1.0.113'],
 }
-# 2. 定义组名
+# 2. 定义组名，root密码，预安装软件包等
 group = "dockertest"
 root_passwd = "kk"
 packages_preinstalled = ""
