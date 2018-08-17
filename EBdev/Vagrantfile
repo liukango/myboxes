@@ -4,18 +4,18 @@
 ### 虚拟机环境配置
 # 1. 定义虚拟机配置: box, cpus, mem, ip(private)
 vms = {
-  :node1 => ['ubuntu/xenial64', '1', '1024', '10.1.0.101'],
-  :node2 => ['centos/7', '2', '1024', '10.1.0.102'],
-  :node3 => ['ubuntu/xenial64', '1', '1536', '10.1.0.103'],
+  :web1 => ['centos/7', '2', '2048', '10.1.3.101'],
+  :db1 => ['ubuntu/xenial64', '1', '1024', '10.1.3.111'],
+  :db2 => ['centos/7', '1', '1024', '10.1.3.112'],
+  :ftp1 => ['centos/7', '1', '1024', '10.1.3.121'],
 }
 # 2. 定义组名
-group = "templates"
+group = "EBdev"
 root_passwd = "kk"
-packages_preinstalled = "tree traceroute"
-# 3. 定义是否执行现成provision
+packages_preinstalled = "vim"
+# 3. 定义是否执行基本的provision
 os_basic_setup = true
 root_sshpasswordless = true
-docker_provision = true
 nodes_provision = true
 
 
@@ -24,12 +24,13 @@ Vagrant.configure("2") do |config|
 
   config.vm.box_check_update = false
 
-  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder "../common", "/common"
 
   config.vm.provider "virtualbox" do |vb|
-    # vb.gui = true
-    vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
-  end
+  # vb.gui = true
+  vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
+
+end
 
 ### 多节点配置
   vms.each do |m_name, m_config|
@@ -48,29 +49,27 @@ Vagrant.configure("2") do |config|
 
       if m.vm.box =~ /ubuntu\/[a-z]+64/
         linux_dist = "ubuntu"
+	# ubuntu 无需安装 virtualbox guest extension
+        m.vbguest.auto_update = false
       elsif m.vm.box =~ /centos\/[0-9]+/
         linux_dist = "centos"
       end
-      # 进行操作系统基本配置：设置root密码，国内源等
-      if os_basic_setup 
-        m.vm.provision "os", type: "shell" do |s|
-          s.path = "../data/scripts/bootstrap-#{linux_dist}.sh"
-          s.args = ["#{root_passwd}", "#{packages_preinstalled}"]
-        end
-      end     
 
-      # 配置root免密码登录
-      if root_sshpasswordless 
-        m.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/my_id_rsa.pub"
-        m.vm.provision "shell" do |s|
-          s.path = "../data/scripts/ssh-passwordless.sh"
-          s.args = [linux_dist]
+      # 进行操作系统基本配置：设置root密码，国内源等
+      if os_basic_setup
+        m.vm.provision "os", type: "shell" do |s|
+          s.path = "../common/scripts/bootstrap-#{linux_dist}.sh"
+          s.args = ["#{root_passwd}", "#{packages_preinstalled}"]
         end
       end
 
-      # 进行Docker的安装与加速器配置
-      if docker_provision
-        m.vm.provision "docker", type: "shell", path: "../data/scripts/prep-docker.sh"
+      # 配置root免密码登录
+      if root_sshpasswordless
+        m.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/my_id_rsa.pub"
+        m.vm.provision "shell" do |s|
+          s.path = "../common/scripts/ssh-passwordless.sh"
+          s.args = [linux_dist]
+        end
       end
 
       # 针对各个node进行不同的provision

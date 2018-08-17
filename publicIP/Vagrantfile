@@ -2,15 +2,13 @@
 # vi: set ft=ruby :
 
 ### 虚拟机环境配置
-# 1. 定义虚拟机配置: box, cpus, mem, ip(private)
+# 1. 定义虚拟机配置: box, cpus, mem, ip(public)
 vms = {
-  :rancherserver => ['ubuntu/xenial64', '2', '2048', '10.1.2.100'],
-  :ranchernode1 => ['ubuntu/xenial64', '2', '1536', '10.1.2.101'],
-  :ranchernode2 => ['ubuntu/xenial64', '2', '1536', '10.1.2.102'],
-  :ranchernode3 => ['ubuntu/xenial64', '2', '1536', '10.1.2.103'],
+  :containers => ['ubuntu/xenial64', '4', '4096', '192.168.0.101'],
+  :hyperledger => ['ubuntu/xenial64', '4', '8192', '192.168.0.102'],
 }
 # 2. 定义组名
-group = "rancher"
+group = "homevms"
 root_passwd = "kk"
 packages_preinstalled = ""
 # 3. 定义是否执行现成provision
@@ -25,7 +23,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.box_check_update = false
 
-  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder "../common", "/common"
 
   config.vm.provider "virtualbox" do |vb|
     # vb.gui = true
@@ -38,7 +36,7 @@ Vagrant.configure("2") do |config|
 
       m.vm.box = "#{m_config[0]}"
       m.vm.hostname = "#{m_name}"
-      m.vm.network "private_network", ip: "#{m_config[3]}"
+      m.vm.network "public_network", ip: "#{m_config[3]}"
 
       m.vm.provider "virtualbox" do |vb|
         vb.name = "#{m_name}"
@@ -55,7 +53,7 @@ Vagrant.configure("2") do |config|
       # 进行操作系统基本配置：设置root密码，国内源等
       if os_basic_setup 
         m.vm.provision "os", type: "shell" do |s|
-          s.path = "../data/scripts/bootstrap-#{linux_dist}.sh"
+          s.path = "../common/scripts/bootstrap-#{linux_dist}.sh"
           s.args = ["#{root_passwd}", "#{packages_preinstalled}"]
         end
       end     
@@ -64,14 +62,14 @@ Vagrant.configure("2") do |config|
       if root_sshpasswordless 
         m.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/my_id_rsa.pub"
         m.vm.provision "shell" do |s|
-          s.path = "../data/scripts/ssh-passwordless.sh"
+          s.path = "../common/scripts/ssh-passwordless.sh"
           s.args = [linux_dist]
         end
       end
 
       # 进行Docker的安装与加速器配置
       if docker_provision
-        m.vm.provision "docker", type: "shell", path: "../data/scripts/prep-docker.sh"
+        m.vm.provision "docker", type: "shell", path: "../common/scripts/prep-docker.sh"
       end
 
       # 针对各个node进行不同的provision

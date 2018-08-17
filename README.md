@@ -18,8 +18,8 @@ template目录下为模板，创建其他环境时可以通过该模板复制来
 
 name & hostname | OS | IP | vCPUs | Memory | Directory | Notes
 --- | --- | --- | --- | --- | ---
-node[0-n] | ubuntu/xenial64 or centos/7 | 10.1.0.10[0-n] | 2 | 1536 | template | 模板，可复制来创建其他环境
-dockernode[0-n] | ubuntu/xenial64 | 10.1.0.11[0-n] | 2 | 1536 | dockertest | Docker测试环境
+node[0-n] | ubuntu/xenial64 or centos/7 | 10.1.1.10[0-n] | 2 | 1536 | template | 模板，可复制来创建其他环境
+dockernode[0-n] | ubuntu/xenial64 | 10.1.1.11[0-n] | 2 | 1536 | dockertest | Docker测试环境
 devstack-mitaka | ubuntu/trusty64 | 10.1.1.101 | 4 | 8192 | devstacks | Deprecated
 devstack-newton | ubuntu/xenial64 | 10.1.1.102 | 4 | 8192 | devstacks |
 devstack-ocata | ubuntu/xenial64 | 10.1.1.103 | 4 | 8192 | devstacks |

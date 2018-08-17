@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
   # config.vm.usable_port_range
 
   # 创建一个private network，从而宿主机可以使用这个IP访问虚拟机
-  config.vm.network "private_network", ip: "10.1.0.100"
+  config.vm.network "private_network", ip: "10.1.1.100"
 
   # 创建一个public network，通常使用bridged network，即桥接网络，与宿主机位于同一网段
   # config.vm.network "public_network", ip: "192.168.0.234"
@@ -101,7 +101,7 @@ Vagrant.configure("2") do |config|
 ### multinode
   config.vm.define "node1" do |node1|
     node1.vm.hostname = "node1"
-    node1.vm.network "private_network", ip: "10.1.0.101"
+    node1.vm.network "private_network", ip: "10.1.1.101"
     node1.vm.provider "virtualbox" do |vb|
       vb.name = "node1"
       vb.memory = "2048"
