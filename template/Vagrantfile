@@ -4,14 +4,19 @@
 ### 虚拟机环境配置
 # 1. 定义虚拟机配置: box, cpus, mem, ip(private)
 vms = {
-  :dockernode1 => ['ubuntu/xenial64', '2', '1536', '10.1.1.111'],
-  :dockernode2 => ['ubuntu/xenial64', '2', '1536', '10.1.1.112'],
-  :dockernode3 => ['ubuntu/xenial64', '2', '1536', '10.1.1.113'],
+  :unode0 => ['ubuntu/xenial64', '1', '2048', '10.1.1.10'],
+  :unode1 => ['ubuntu/xenial64', '1', '2048', '10.1.1.11'],
+  :cnode2 => ['centos/7', '1', '2048', '10.1.1.12'],
+  :cnode3 => ['centos/7', '1', '2048', '10.1.1.13'],
 }
-# 2. 定义组名，root密码，预安装软件包等
-group = "dockertest"
+
+# 2. 定义组名
+proxy = ""
+#proxy = "http://10.0.2.2:1080/pac"
+group = "templates"
 root_passwd = "kk"
-packages_preinstalled = ""
+packages_preinstalled = "git vim curl wget tree"
+
 # 3. 定义是否执行现成provision
 os_basic_setup = true
 root_sshpasswordless = true
@@ -24,10 +29,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.box_check_update = false
 
-  # config.vm.synced_folder "../data", "/vagrant_data"
-
   config.vm.provider "virtualbox" do |vb|
-    # vb.gui = true
     vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
   end
 
@@ -35,8 +37,11 @@ Vagrant.configure("2") do |config|
   vms.each do |m_name, m_config|
     config.vm.define "#{m_name}" do |m|
 
+      # If centos node exists, intall vagrant-vbguest plugin to use synced folder (vagrant plugin install vagrant-vbguest)
+      # m.vm.synced_folder "../.share/#{m_name}.kang.liu", "/srv", create: true
+
       m.vm.box = "#{m_config[0]}"
-      m.vm.hostname = "#{m_name}"
+      m.vm.hostname = "#{m_name}.kang.liu"
       m.vm.network "private_network", ip: "#{m_config[3]}"
 
       m.vm.provider "virtualbox" do |vb|
@@ -45,27 +50,24 @@ Vagrant.configure("2") do |config|
         vb.cpus = "#{m_config[1]}"
       end
 
+#     if m.vm.box =~ /ubuntu\/[a-z]+64/
+#       linux_dist = "ubuntu"
+#     elsif m.vm.box =~ /centos\/[0-9]+/
+#       linux_dist = "centos"
+#     end
 
-      if m.vm.box =~ /ubuntu\/[a-z]+64/
-        linux_dist = "ubuntu"
-      elsif m.vm.box =~ /centos\/[0-9]+/
-        linux_dist = "centos"
-      end
       # 进行操作系统基本配置：设置root密码，国内源等
-      if os_basic_setup 
+      if os_basic_setup
         m.vm.provision "os", type: "shell" do |s|
-          s.path = "../common/scripts/bootstrap-#{linux_dist}.sh"
-          s.args = ["#{root_passwd}", "#{packages_preinstalled}"]
+          s.path = "../common/scripts/bootstrap-os.sh"
+          s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{proxy}"]
         end
-      end     
+      end
 
       # 配置root免密码登录
-      if root_sshpasswordless 
-        m.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/my_id_rsa.pub"
-        m.vm.provision "shell" do |s|
-          s.path = "../common/scripts/ssh-passwordless.sh"
-          s.args = [linux_dist]
-        end
+      if root_sshpasswordless
+        m.vm.provision "file", source: "~/.ssh", destination: "/tmp/host.ssh"
+        m.vm.provision "ssh", type: "shell", path: "../common/scripts/ssh-passwordless.sh"
       end
 
       # 进行Docker的安装与加速器配置
@@ -75,10 +77,7 @@ Vagrant.configure("2") do |config|
 
       # 针对各个node进行不同的provision
       if nodes_provision
-        m.vm.provision "nodes", type: "shell" do |s|
-          s.path = "nodes-provision.sh"
-          s.args = ["#{m_name}"]
-        end
+        m.vm.provision "nodes", type: "shell", path: "nodes-provision.sh"
       end
 
       # 节点启动成功后给出消息
@@ -90,6 +89,5 @@ Vagrant.configure("2") do |config|
 
     end
   end
-
 
 end

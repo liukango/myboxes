@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Common envirenment virables
-PASSWORD=${1:-"ubuntu"}
+PASSWORD=${1:-"root"}
 APT_MIRROR_HOST="mirrors.aliyun.com"
 PYPI_MIRROR_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
 
@@ -10,8 +10,8 @@ sudo -s << EOF
 
 (echo "$PASSWORD";sleep 1;echo "$PASSWORD") | passwd root &> /dev/null
 
-echo 'export http_proxy=http://10.0.2.2:1080/pac' >> /etc/bash.bashrc
-echo 'export https_proxy=http://10.0.2.2:1080/pac' >> /etc/bash.bashrc
+echo 'export http_proxy=$3' >> /etc/bash.bashrc
+echo 'export https_proxy=$3' >> /etc/bash.bashrc
 
 rm -f /etc/localtime; ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 

@@ -2,12 +2,14 @@
 # vi: set ft=ruby :
 
 vms = {
-  :ocata  => ['4', '8192', '192.168.0.103'],
-#  :newton => ['4', '8192', '192.168.0.103'],
-#  :mitaka => ['4', '8192', '10.1.1.101'],
+  :ocata  => ['4', '8192', '10.1.1.99'],
+#  :newton => ['4', '8192', '10.1.1.99'],
+#  :mitaka => ['4', '8192', '10.1.1.99'],
 }
 
 root_passwd = "kk"
+proxy = ""
+packages_preinstalled = "vim curl wget"
 
 Vagrant.configure("2") do |config|
 
@@ -69,8 +71,8 @@ Vagrant.configure("2") do |config|
         vb.cpus = "#{m_config[0]}"
       end
       m.vm.provision "shell" do |s|
-        s.path = "../common/scripts/bootstrap-ubuntu.sh"
-        s.args = [root_passwd]
+        s.path = "../common/scripts/bootstrap-os.sh"
+        s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{proxy}"]
       end
       m.vm.provision "shell" do |s|
         s.path = "bootstrap.sh"

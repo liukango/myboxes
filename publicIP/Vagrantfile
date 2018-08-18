@@ -7,16 +7,18 @@ vms = {
   :containers => ['ubuntu/xenial64', '4', '4096', '192.168.0.101'],
   :hyperledger => ['ubuntu/xenial64', '4', '8192', '192.168.0.102'],
 }
+
 # 2. 定义组名
 group = "homevms"
 root_passwd = "kk"
 packages_preinstalled = ""
+proxy = ""
+
 # 3. 定义是否执行现成provision
 os_basic_setup = true
 root_sshpasswordless = true
 docker_provision = true
 nodes_provision = true
-
 
 ### 默认配置
 Vagrant.configure("2") do |config|
@@ -45,16 +47,11 @@ Vagrant.configure("2") do |config|
       end
 
 
-      if m.vm.box =~ /ubuntu\/[a-z]+64/
-        linux_dist = "ubuntu"
-      elsif m.vm.box =~ /centos\/[0-9]+/
-        linux_dist = "centos"
-      end
       # 进行操作系统基本配置：设置root密码，国内源等
       if os_basic_setup 
         m.vm.provision "os", type: "shell" do |s|
-          s.path = "../common/scripts/bootstrap-#{linux_dist}.sh"
-          s.args = ["#{root_passwd}", "#{packages_preinstalled}"]
+          s.path = "../common/scripts/bootstrap-os.sh"
+          s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{proxy}"]
         end
       end     
 
@@ -63,7 +60,6 @@ Vagrant.configure("2") do |config|
         m.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/tmp/my_id_rsa.pub"
         m.vm.provision "shell" do |s|
           s.path = "../common/scripts/ssh-passwordless.sh"
-          s.args = [linux_dist]
         end
       end
 
