@@ -1,47 +1,46 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-### 虚拟机环境配置
-# 1. 定义虚拟机配置: box, cpus, mem, ip(private)
+
+### Configurations 
+# [VM] name, cpus, memory(MB), ip(private), group name
+# [OS] root-password, http(s)_proxy, packages to install
+######################
+group = "templates"
 vms = {
   :unode0 => ['ubuntu/xenial64', '1', '2048', '10.1.1.10'],
   :unode1 => ['ubuntu/xenial64', '1', '2048', '10.1.1.11'],
   :cnode2 => ['centos/7', '1', '2048', '10.1.1.12'],
   :cnode3 => ['centos/7', '1', '2048', '10.1.1.13'],
 }
-
-# 2. 定义组名
-proxy = ""
-#proxy = "http://10.0.2.2:1080/pac"
-group = "templates"
 root_passwd = "kk"
+proxy = "http://10.0.2.2:1089/proxy.pac"
 packages_preinstalled = "git vim curl wget tree"
-
-# 3. 定义是否执行现成provision
-os_basic_setup = true
-root_sshpasswordless = true
-docker_provision = true
-nodes_provision = false
+pvurl_prefix="https://raw.githubusercontent.com/get-set/myboxes/master/template/provisioning"
 
 
-### 默认配置
+### Config Virtualbox and VMs.
+######################
 Vagrant.configure("2") do |config|
 
   config.vm.box_check_update = false
 
   config.vm.provider "virtualbox" do |vb|
     vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
+    vb.customize ["modifyvm", :id, "--pagefusion", "on"]
   end
 
-### 多节点配置
+  
+
+  ### Configurations for each VM.
   vms.each do |m_name, m_config|
     config.vm.define "#{m_name}" do |m|
 
       # If centos node exists, intall vagrant-vbguest plugin to use synced folder (vagrant plugin install vagrant-vbguest)
-      # m.vm.synced_folder "../.share/#{m_name}.kang.liu", "/srv", create: true
+      # m.vm.synced_folder "~/.Virtualboxes/.share/#{m_name}", "/srv", create: true, , SharedFoldersEnableSymlinksCreate: false
 
       m.vm.box = "#{m_config[0]}"
-      m.vm.hostname = "#{m_name}.kang.liu"
+      m.vm.hostname = "#{m_name}"
       m.vm.network "private_network", ip: "#{m_config[3]}"
 
       m.vm.provider "virtualbox" do |vb|
@@ -50,42 +49,28 @@ Vagrant.configure("2") do |config|
         vb.cpus = "#{m_config[1]}"
       end
 
-#     if m.vm.box =~ /ubuntu\/[a-z]+64/
-#       linux_dist = "ubuntu"
-#     elsif m.vm.box =~ /centos\/[0-9]+/
-#       linux_dist = "centos"
-#     end
 
-      # 进行操作系统基本配置：设置root密码，国内源等
-      if os_basic_setup
+      ### Provisionings that will be executed
+      if true
+
+        # Basic OS configurations: root password, mirrors, etc.
         m.vm.provision "os", type: "shell" do |s|
-          s.path = "../common/scripts/bootstrap-os.sh"
+          s.path = "#{pvurl_prefix}/shell/bootstrap-os.sh"
           s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{proxy}"]
         end
-      end
 
-      # 配置root免密码登录
-      if root_sshpasswordless
+        # SSH passwordless for root user.
         m.vm.provision "file", source: "~/.ssh", destination: "/tmp/host.ssh"
-        m.vm.provision "ssh", type: "shell", path: "../common/scripts/ssh-passwordless.sh"
+        m.vm.provision "ssh", type: "shell", path: "#{pvurl_prefix}/shell/ssh-passwordless.sh"
+
+        # Install docker
+        m.vm.provision "docker", type: "shell", path: "#{pvurl_prefix}/shell/prep-docker.sh"
+
       end
 
-      # 进行Docker的安装与加速器配置
-      if docker_provision
-        m.vm.provision "docker", type: "shell", path: "../common/scripts/prep-docker.sh"
-      end
 
-      # 针对各个node进行不同的provision
-      if nodes_provision
-        m.vm.provision "nodes", type: "shell", path: "nodes-provision.sh"
-      end
-
-      # 节点启动成功后给出消息
-      if root_sshpasswordless
-        config.vm.post_up_message = "#{m_name}启动成功，可使用SSH免密登录root[ssh root@#{m_config[3]}]。"
-      elsif
-        config.vm.post_up_message = "#{m_name}启动成功，可使用[vagrant ssh #{m_name}]访问。"
-      end
+      ### Message on successful boot.
+      config.vm.post_up_message = "#{m_name}启动成功，可使用SSH免密登录root[ssh root@#{m_config[3]}]。"
 
     end
   end
