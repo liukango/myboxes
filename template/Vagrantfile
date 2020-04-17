@@ -15,7 +15,7 @@ vms = {
 }
 root_passwd = "kk"
 proxy = "http://10.0.2.2:1089/proxy.pac"
-packages_preinstalled = "git vim curl wget tree"
+packages_preinstalled = "git vim curl wget tree screen"
 #pvurl_prefix="https://raw.githubusercontent.com/get-set/myboxes/master/template/provisioning"
 pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/template/provisioning"
 
@@ -28,10 +28,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |vb|
     vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
-    vb.customize ["modifyvm", :id, "--pagefusion", "on"]
+#   vb.customize ["modifyvm", :id, "--pagefusion", "on"]
   end
-
-  
 
   ### Configurations for each VM.
   vms.each do |m_name, m_config|
