@@ -14,7 +14,8 @@ vms = {
   :cnode3 => ['centos/7', '1', '2048', '10.1.1.13'],
 }
 root_passwd = "kk"
-proxy = "http://10.0.2.2:1089/proxy.pac"
+proxy = ""
+#proxy = "http://10.0.2.2:1089/proxy.pac"
 packages_preinstalled = "git vim curl wget tree screen"
 #pvurl_prefix="https://raw.githubusercontent.com/get-set/myboxes/master/template/provisioning"
 pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/template/provisioning"
