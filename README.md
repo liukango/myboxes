@@ -13,10 +13,12 @@ template目录下为模板，创建其他环境时可以通过该模板复制来
 
 **template使用方式：**
 
-1. 下载或复制`template`下的`Vagrant`模板文件
+> 以virtualbox的使用为例。
 
-    curl -O https://raw.githubusercontent.com/get-set/myboxes/master/template/Vagrantfile
-    curl -O https://gitee.com/get-set/myboxes/raw/master/template/Vagrantfile
+1. 下载或复制`virtualbox`下的`Vagrant`模板文件
+
+    curl -O https://raw.githubusercontent.com/get-set/myboxes/master/virtualbox/Vagrantfile
+    curl -O https://gitee.com/get-set/myboxes/raw/master/virtualbox/Vagrantfile
 
 2. 根据需要调整虚拟机配置和provisioning
 3. `vagrant up`

@@ -1,0 +1,82 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+### Configurations 
+# [VM] name, cpus, memory(MB), ip(private), group name
+# [OS] root-password, http(s)_proxy, packages to install
+######################
+group = "templates"
+vms = {
+  :centos => ['centos/7', '1', '2048', '10.1.1.5'],
+  :ubuntu => ['ubuntu/bionic64', '1', '2048', '10.1.1.6'],
+}
+root_passwd = "kk"
+proxy = ""
+#proxy = "http://10.0.2.2:1089/proxy.pac"
+packages_preinstalled = "git vim curl wget tree screen"
+#pvurl_prefix="https://raw.githubusercontent.com/get-set/myboxes/master/provisioning"
+pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
+
+
+### Config Virtualbox and VMs.
+######################
+Vagrant.configure("2") do |config|
+
+  # The following three config needs vagrant-hostmanager plugin installed: 'vagrant plugin install vagrant-hostmanager'
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
+  config.hostmanager.manage_guest = true
+
+  config.vm.box_check_update = false
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
+#   vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+#   vb.customize ["modifyvm", :id, "--pagefusion", "on"]
+  end
+
+  ### Configurations for each VM.
+  vms.each do |m_name, m_config|
+    config.vm.define "#{m_name}" do |m|
+
+      # If centos node exists, intall vagrant-vbguest plugin to use synced folder (vagrant plugin install vagrant-vbguest)
+      # m.vm.synced_folder "~/.Virtualboxes/.share/#{m_name}", "/srv", create: true, , SharedFoldersEnableSymlinksCreate: false
+
+      m.vm.box = "#{m_config[0]}"
+      m.vm.hostname = "#{m_name}"
+      m.vm.network "private_network", ip: "#{m_config[3]}"
+
+      m.vm.provider "virtualbox" do |vb|
+        vb.name = "#{m_name}"
+        vb.memory = "#{m_config[2]}"
+        vb.cpus = "#{m_config[1]}"
+      end
+
+
+      ### Provisionings that will be executed
+      if true
+
+        # Basic OS configurations: root password, mirrors, etc.
+        m.vm.provision "os", type: "shell" do |s|
+          s.path = "#{pvurl_prefix}/shell/bootstrap-os.sh"
+          s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{proxy}"]
+        end
+
+        # SSH passwordless for root user.
+        m.vm.provision "file", source: "~/.ssh", destination: "/tmp/host.ssh"
+        m.vm.provision "ssh", type: "shell", path: "#{pvurl_prefix}/shell/ssh-passwordless.sh"
+
+        # Install docker
+        m.vm.provision "docker", type: "shell", path: "#{pvurl_prefix}/shell/prep-docker.sh"
+
+      end
+
+
+      ### Message on successful boot.
+      config.vm.post_up_message = "#{m_name}启动成功，可使用SSH免密登录root[ssh root@#{m_config[3]}]。"
+
+    end
+  end
+
+end
