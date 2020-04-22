@@ -25,10 +25,16 @@ pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/template/provisioning
 ######################
 Vagrant.configure("2") do |config|
 
+  # The following three config needs vagrant-hostmanager plugin installed: 'vagrant plugin install vagrant-hostmanager'
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
+  config.hostmanager.manage_guest = true
+
   config.vm.box_check_update = false
 
   config.vm.provider "virtualbox" do |vb|
     vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
+#   vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
 #   vb.customize ["modifyvm", :id, "--pagefusion", "on"]
   end
 
