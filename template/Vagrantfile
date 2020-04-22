@@ -8,10 +8,8 @@
 ######################
 group = "templates"
 vms = {
-  :unode0 => ['ubuntu/xenial64', '1', '2048', '10.1.1.10'],
-  :unode1 => ['ubuntu/xenial64', '1', '2048', '10.1.1.11'],
-  :cnode2 => ['centos/7', '1', '2048', '10.1.1.12'],
-  :cnode3 => ['centos/7', '1', '2048', '10.1.1.13'],
+  :centos => ['centos/7', '1', '2048', '10.1.1.5'],
+  :ubuntu => ['ubuntu/bionic64', '1', '2048', '10.1.1.6'],
 }
 root_passwd = "kk"
 proxy = ""
