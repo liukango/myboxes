@@ -12,8 +12,6 @@ vms = {
   :ubuntu => ['ubuntu/bionic64', '1', '2048', '10.1.1.6'],
 }
 root_passwd = "kk"
-proxy = ""
-#proxy = "http://10.0.2.2:1089/proxy.pac"
 packages_preinstalled = "git vim curl wget tree screen"
 #pvurl_prefix="https://raw.githubusercontent.com/get-set/myboxes/master/provisioning"
 pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
@@ -60,7 +58,7 @@ Vagrant.configure("2") do |config|
         # Basic OS configurations: root password, mirrors, etc.
         m.vm.provision "os", type: "shell" do |s|
           s.path = "#{pvurl_prefix}/shell/bootstrap-os.sh"
-          s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{proxy}"]
+          s.args = ["#{root_passwd}", "#{packages_preinstalled}"]
         end
 
         # SSH passwordless for root user.

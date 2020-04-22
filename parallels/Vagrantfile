@@ -3,24 +3,21 @@
 
 
 ### Configurations 
-# [VM] name, cpus, memory(MB), ip(private), group name
+# [VM] name, cpus, memory(MB)
 # [OS] root-password, http(s)_proxy, packages to install
 ######################
-group = "templates"
 vms = {
   :centos => ['bento/centos-7', '1', '2048', '10.3.3.5'],
   :ubuntu => ['bento/ubuntu-18.04', '1', '2048', '10.3.3.6'],
 }
 root_passwd = "kk"
-proxy = ""
-#proxy = "http://10.0.2.2:1089/proxy.pac"
-packages_preinstalled = "git vim curl wget tree screen"
-#pvurl_prefix="https://raw.githubusercontent.com/get-set/myboxes/master/provisioning"
-pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
-
+packages_preinstalled = "vim git curl wget tree screen"
+######################
+### End of Configurations
 
 ### Config Virtualbox and VMs.
 ######################
+pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
 Vagrant.configure("2") do |config|
 
   # The following three config needs vagrant-hostmanager plugin installed: 'vagrant plugin install vagrant-hostmanager'
@@ -56,10 +53,12 @@ Vagrant.configure("2") do |config|
     config.vm.define "#{m_name}" do |m|
 
       m.vm.synced_folder "~/", "/media/psf/Home"
+
       m.vm.box = "#{m_config[0]}"
       m.vm.hostname = "#{m_name}"
 
-      m.vm.network "private_network", ip: "#{m_config[3]}"
+      # The second nic, the first one is "Share" network
+      #m.vm.network "private_network", ip: "#{m_config[3]}"
 
       m.vm.provider "parallels" do |prl|
         prl.name = "#{m_name}"
@@ -74,7 +73,7 @@ Vagrant.configure("2") do |config|
         # Basic OS configurations: root password, mirrors, etc.
         m.vm.provision "os", type: "shell" do |s|
           s.path = "#{pvurl_prefix}/shell/bootstrap-os.sh"
-          s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{proxy}"]
+          s.args = ["#{root_passwd}", "#{packages_preinstalled}"]
         end
 
         # SSH passwordless for root user.

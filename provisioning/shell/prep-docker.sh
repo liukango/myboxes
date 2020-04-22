@@ -2,25 +2,18 @@
 
 sudo -s << EOF
 
-# DaoCloud 安装 Docker
-# curl -sSL https://get.daocloud.io/docker | sh
-uname -a | grep -q ubuntu
-curl -sSL https://get.daocloud.io/docker > /tmp/install-docker.sh && sh /tmp/install-docker.sh --mirror Aliyun && rm -f /tmp/install-docker.sh
+curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 
-#if [ $? = 0 ]; then
-#  apt install -y docker.io
-#else
-#  curl -sSL https://get.daocloud.io/docker > /tmp/install-docker.sh && sh /tmp/install-docker.sh --mirror Aliyun && rm -f /tmp/install-docker.sh
-#fi
-
-# DaoCloud 加速器
-# curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://a4e6a79f.m.daocloud.io
-# systemctl restart docker || service docker restart
-
-# Aliyun 加速器
-sudo mkdir -p /etc/docker
-sudo echo '{"registry-mirrors": ["https://anwk44qv.mirror.aliyuncs.com"]}' > /etc/docker/daemon.json
-sudo systemctl daemon-reload
-sudo systemctl restart docker
+mkdir -p /etc/docker
+cat <<EOC > /etc/docker/daemon.json
+{
+  "registry-mirrors" : ["https://anwk44qv.mirror.aliyuncs.com"],
+  "log-opts": {
+    "max-file": "5",
+    "max-size": "10m"
+  }
+}
+EOC
+systemctl daemon-reload && systemctl restart docker
 
 EOF
