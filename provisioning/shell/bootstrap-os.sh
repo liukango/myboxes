@@ -14,16 +14,14 @@ rm -f /etc/localtime; ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # Change to domestic repo mirror (no need for centos now)
 which yum &> /dev/null && \
-  echo -e "Installing packages: $2 ... \c" && \
-  yum makecache && yum install -y vim $2 > /dev/null && \
-  echo "Done"
+  echo "Installing packages: $2 ..." && \
+  yum makecache && yum install -y vim $2 > /dev/null
 which apt &> /dev/null && \
   cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
   sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list && \
   export DEBIAN_FRONTEND=noninteractive && \
-  echo -e "Installing packages: $2 ... \c" && \
-  apt-get update && apt-get -qq install -y $2 > /dev/null && \
-  echo "Done"
+  echo "Installing packages: $2 ..." && \
+  apt-get update && apt-get -qq install -y $2 > /dev/null
 
 # Disable selinux
 cat /etc/issue | grep -qi "centos" && sed -i '/^SELINUX=/c SELINUX=disabled' /etc/selinux/config && setenforce 0
