@@ -14,8 +14,9 @@ root_passwd = "kk"
 packages_preinstalled = "vim git curl wget tree"
 nested_virtulization = "off"
 make_dhcp_static = true
+install_zsh = true
+install_tmux = true
 install_docker = false
-install_tmux = false
 ######################
 ### End of Configurations
 
@@ -87,12 +88,16 @@ Vagrant.configure("2") do |config|
         m.vm.provision "dhcp to static", type: "shell", path: "#{pvurl_prefix}/shell/dhcp2static.sh"
       end
       
-      if install_docker
-        m.vm.provision "install docker", type: "shell", path: "#{pvurl_prefix}/shell/prep-docker.sh"
+      if install_zsh
+        m.vm.provision "install zsh", type: "shell", path: "#{pvurl_prefix}/shell/prep-zsh.sh"
       end
 
       if install_tmux
         m.vm.provision "install tmux", type: "shell", path: "#{pvurl_prefix}/shell/prep-tmux.sh"
+      end
+
+      if install_docker
+        m.vm.provision "install docker", type: "shell", path: "#{pvurl_prefix}/shell/prep-docker.sh"
       end
 
     end
