@@ -10,8 +10,10 @@ which yum &> /dev/null && \
 which apt &> /dev/null && \
     apt-get install -y zsh > /dev/null
 
+export https_proxy=$MYPROXY
+
 echo "Installing oh-my-zsh ..."
-sh -c "$(curl -fsSL https://gitee.com/get-set/ohmyzsh/raw/master/tools/install.sh)" "" --unattended
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 chsh -s $(which zsh)
 
 echo "Installing zsh-autosuggestiongs & zsh-syntax-highlighting ..."

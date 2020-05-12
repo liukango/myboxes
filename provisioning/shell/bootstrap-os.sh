@@ -39,5 +39,6 @@ echo -e "[global]\nindex-url = ${PYPI_MIRROR_URL}" > /etc/pip.conf
 # Set English Locale
 echo "LANG=en_US.utf-8" > /etc/environment
 echo "LC_ALL=en_US.utf-8" >> /etc/environment
+echo "MYPROXY=$3" >> /etc/environment
 
 EOF
