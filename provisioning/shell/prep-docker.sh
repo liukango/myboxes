@@ -2,7 +2,13 @@
 
 sudo -s << EOF
 
-curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+echo "Installing docker ..."
+
+curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun &> /dev/null
+
+[ $? -ne 0 ] && exit 0
+
+echo "Configuration of docker daemon ..."
 
 mkdir -p /etc/docker
 cat <<EOC > /etc/docker/daemon.json

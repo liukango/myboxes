@@ -12,20 +12,27 @@ sudo -s << EOF
 
 rm -f /etc/localtime; ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-# Change to domestic repo mirror (no need for centos now)
-which yum &> /dev/null && \
+# Change to domestic repo mirror (no need for centos7 now)
+cat /etc/os-release | grep -qi "centos linux 7" && \
     rm -f /etc/yum.repos.d/epel* && \
     wget -qO /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo && \
     rm -f /etc/yum.repos.d/ius* && \
-    wget -qO /etc/yum.repos.d/ius.repo http://mirrors.aliyun.com/ius/ius-7.repo && \
-    yum makecache && \
+    wget -qO /etc/yum.repos.d/ius.repo http://mirrors.aliyun.com/ius/ius-7.repo
+cat /etc/os-release | grep -qi "centos linux 8" && \
+    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup && \
+    curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
+which yum &> /dev/null && \
+    echo "Exec: yum makecache ..." && \
+    yum makecache &> /dev/null && \
     echo "Installing packages: $2 ..." && \
     yum install -y vim $2 > /dev/null
+
 which apt &> /dev/null && \
     cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
     sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list && \
     export DEBIAN_FRONTEND=noninteractive && \
-    apt-get update && \
+    echo "Exec: apt update ..." && \
+    apt-get update &> /dev/null && \
     echo "Installing packages: $2 ..." && \
     apt-get -qq install -y $2 > /dev/null
 
