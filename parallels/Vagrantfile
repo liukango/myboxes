@@ -7,16 +7,25 @@
 # [OS] root-password, http(s)_proxy, packages to install
 ######################
 vms = {
-  :centos => ['bento/centos-7', '1', '2048', '10.3.3.5'],
+  :centos => ['bento/centos-8', '1', '2048', '10.3.3.5'],
   :ubuntu => ['bento/ubuntu-18.04', '1', '2048', '10.3.3.6'],
 }
+# Set password for root
 root_passwd = "kk"
-http_proxy = "socks5://10.2.2.2:1080"
+# Http proxy will be set into /etc/environment as $HOST_PROXY,
+# the given proxy should be accessable from within guest OS.
+host_proxy = "http://10.2.2.2:8118"
+# Packages you want to install during provisioning
 packages_preinstalled = "vim git curl wget tree"
+# Turn on/off nested virtulization
 nested_virtulization = "off"
+# Make dynamic IP address to static IP, useful running server-like applications
 make_dhcp_static = true
+# Install zsh and oh-my-zsh(copied from Host)
 install_zsh = true
+# Install tmux2 along with oh-my-tmux
 install_tmux = true
+# Install docker and setup nessary configs like registry
 install_docker = false
 ######################
 ### End of Configurations
@@ -77,7 +86,7 @@ Vagrant.configure("2") do |config|
       # Basic OS configurations: root password, mirrors, etc.
       m.vm.provision "prepare os", type: "shell" do |s|
         s.path = "#{pvurl_prefix}/shell/bootstrap-os.sh"
-        s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{http_proxy}"]
+        s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{host_proxy}"]
       end
 
       # SSH passwordless for root user.
@@ -90,7 +99,10 @@ Vagrant.configure("2") do |config|
       end
       
       if install_zsh
-        m.vm.provision "install zsh", type: "shell", path: "#{pvurl_prefix}/shell/prep-zsh.sh"
+        $script = <<-SCRIPT
+        sudo su root -c "export HOST_PROXY=http://10.2.2.2:8118; curl -fsSL https://gitee.com/get-set/myboxes/raw/master/provisioning/shell/prep-zsh.sh | sh"
+        SCRIPT
+        m.vm.provision "install zsh", type: "shell", inline: $script
       end
 
       if install_tmux

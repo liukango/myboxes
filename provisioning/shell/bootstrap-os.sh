@@ -37,8 +37,8 @@ cat /etc/issue | grep -qi "centos" && sed -i '/^SELINUX=/c SELINUX=disabled' /et
 echo -e "[global]\nindex-url = ${PYPI_MIRROR_URL}" > /etc/pip.conf
 
 # Set English Locale
-echo "LANG=en_US.utf-8" > /etc/environment
+echo "LANG=en_US.utf-8" >> /etc/environment
 echo "LC_ALL=en_US.utf-8" >> /etc/environment
-echo "MYPROXY=$3" >> /etc/environment
+echo "HOST_PROXY=$3" >> /etc/environment
 
 EOF
