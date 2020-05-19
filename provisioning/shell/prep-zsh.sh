@@ -2,6 +2,7 @@
 
 echo "Installing zsh ..."
 apt-get -qq install -y zsh &> /dev/null || yum install -y zsh &> /dev/null || exit 0
+chsh -s $(which zsh) &> /dev/null || usermod -s /usr/bin/zsh root &> /dev/null
 
 if [ -d /media/psf/Home/.oh-my-zsh ]; then
     echo "Installing oh-my-zsh by copying from host OS ..." && \
@@ -36,4 +37,3 @@ n=0; until [ $n -ge 5 ]; do
     n=$[$n+1]; sleep 1
 done
 
-chsh -s $(which zsh) &> /dev/null
