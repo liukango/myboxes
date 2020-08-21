@@ -10,6 +10,7 @@ PREINSTALLED_PACKAGES=${1:-"vim"}
 # 3. disable selinux
 # 4. set locale
 # 5. install necessary packages
+# 6. change user "vagrant" privilege
 
 sudo -s << EOF
 
@@ -35,10 +36,10 @@ echo "LC_ALL=en_US.utf-8" >> /etc/environment
 
 # 5. install necessary packages
 cat /etc/os-release | grep -qi "centos linux 7" && \
-    yum install -y epel-release && \
+    yum install -y epel-release > /dev/null && \
     curl -sSL http://mirrors.aliyun.com/repo/epel-7.repo -o /etc/yum.repos.d/epel.repo
 cat /etc/os-release | grep -qi "centos linux 8" && \
-    yum install -y https://mirrors.aliyun.com/epel/epel-release-latest-8.noarch.rpm && \
+    yum install -y https://mirrors.aliyun.com/epel/epel-release-latest-8.noarch.rpm > /dev/null && \
     sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirrors.aliyun.com|' /etc/yum.repos.d/epel* && \
     sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
 which yum &> /dev/null && \
@@ -47,7 +48,7 @@ which yum &> /dev/null && \
     echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
     yum install -y ${PREINSTALLED_PACKAGES} > /dev/null
 
-cat /etc/os-release | grep -qi "Ubuntu" && \
+cat /etc/os-release | grep -qi "ubuntu" && \
     cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
     sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list
 which apt &> /dev/null && \
@@ -56,5 +57,12 @@ which apt &> /dev/null && \
     apt-get update &> /dev/null && \
     echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
     apt-get -qq install -y ${PREINSTALLED_PACKAGES} > /dev/null
+
+# 6. change user "vagrant" privilege
+cat /etc/os-release | grep -qi "centos linux" && \
+    usermod -aG wheel vagrant && \
+    sed -i "s/^%wheel/#&/; s/^# %wheel/%wheel/" /etc/sudoers
+cat /etc/os-release | grep -qi "ubuntu" && \
+    sed -i '/^%sudo/s/) ALL/) NOPASSWD:ALL/' /etc/sudoers
 
 EOF

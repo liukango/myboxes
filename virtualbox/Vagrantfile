@@ -8,8 +8,8 @@
 ######################
 group = "templates"
 vms = {
-  :centos => ['centos/8', '1', '2048', '10.1.1.5'],
-  :ubuntu => ['ubuntu/bionic64', '1', '2048', '10.1.1.6'],
+  :centos => ['bento/centos-8', '1', '2048', '10.1.1.5'],
+  :ubuntu => ['bento/ubuntu-18.04', '1', '2048', '10.1.1.6'],
 }
 # Packages you want to install during provisioning
 packages_preinstalled = "vim git curl wget tree"
