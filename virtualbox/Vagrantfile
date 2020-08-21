@@ -37,7 +37,8 @@ Vagrant.configure("2") do |config|
     vb.linked_clone = true
     vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
     vb.customize ["modifyvm", :id, "--nested-hw-virt", "#{nested_virtulization}"]
-    vb.customize ["modifyvm", :id, "--pagefusion", "on"]
+    # pagefusion cannot be enabled on MacOS.
+    # vb.customize ["modifyvm", :id, "--pagefusion", "on"]
   end
 
   ### Configurations for each VM.
