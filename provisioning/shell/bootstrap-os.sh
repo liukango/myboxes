@@ -1,31 +1,48 @@
 #!/bin/bash
 
 # Common envirenment virables
-PASSWORD=${1:-"root"}
 APT_MIRROR_HOST="mirrors.aliyun.com"
-PYPI_MIRROR_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
+PREINSTALLED_PACKAGES=${1:-"vim"}
 
-# Change password for root and permit root login
+# OS bootstrap:
+# 1. ssh passwordless
+# 2. set timezone
+# 3. set repo mirrors
+# 4. disable selinux
+
 sudo -s << EOF
 
-(echo "$PASSWORD";sleep 1;echo "$PASSWORD") | passwd root &> /dev/null
+mkdir -p /root/.ssh && chmod 700 /root/.ssh
+cp /tmp/host.ssh/id_rsa /root/.ssh/ && chmod 600 /root/.ssh/id_rsa
+cp /tmp/host.ssh/id_rsa.pub /root/.ssh/ && chmod 644 /root/.ssh/id_rsa.pub
+cat /tmp/host.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys
+rm -rf /tmp/host.ssh
+sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
+sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
+systemctl restart sshd
 
-rm -f /etc/localtime; ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-# Change to domestic repo mirror (no need for centos7 now)
-cat /etc/os-release | grep -qi "centos linux 7" && \
-    rm -f /etc/yum.repos.d/epel* && \
-    wget -qO /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo && \
-    rm -f /etc/yum.repos.d/ius* && \
-    wget -qO /etc/yum.repos.d/ius.repo http://mirrors.aliyun.com/ius/ius-7.repo
-cat /etc/os-release | grep -qi "centos linux 8" && \
+timedatectl set-timezone Asia/Shanghai
+
+
+grep -q "CentOS Linux release 7" /etc/redhat-release && \
     mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup && \
-    curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
+    curl -sSL http://mirrors.aliyun.com/repo/Centos-7.repo -o /etc/yum.repos.d/CentOS-Base.repo && \
+    rm -f /etc/yum.repos.d/epel* && \
+    curl -sSL http://mirrors.aliyun.com/repo/epel-7.repo -o /etc/yum.repos.d/epel.repo
+
+grep -q "CentOS Linux release 8" /etc/redhat-release && \
+    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup && \
+    curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo && \
+    yum install -y https://mirrors.aliyun.com/epel/epel-release-latest-8.noarch.rpm && \
+    sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirrors.aliyun.com|' /etc/yum.repos.d/epel* && \
+    sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
+
 which yum &> /dev/null && \
     echo "Exec: yum makecache ..." && \
     yum makecache &> /dev/null && \
-    echo "Installing packages: $2 ..." && \
-    yum install -y vim $2 > /dev/null
+    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
+    yum install -y ${PREINSTALLED_PACKAGES} > /dev/null
 
 which apt &> /dev/null && \
     cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
@@ -33,19 +50,10 @@ which apt &> /dev/null && \
     export DEBIAN_FRONTEND=noninteractive && \
     echo "Exec: apt update ..." && \
     apt-get update &> /dev/null && \
-    echo "Installing packages: $2 ..." && \
-    apt-get -qq install -y $2 > /dev/null
+    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
+    apt-get -qq install -y ${PREINSTALLED_PACKAGES} > /dev/null
 
-# Disable selinux
+
 cat /etc/issue | grep -qi "centos" && sed -i '/^SELINUX=/c SELINUX=disabled' /etc/selinux/config && setenforce 0
-
-
-# Use Domestic pypi mirror
-echo -e "[global]\nindex-url = ${PYPI_MIRROR_URL}" > /etc/pip.conf
-
-# Set English Locale
-echo "LANG=en_US.utf-8" >> /etc/environment
-echo "LC_ALL=en_US.utf-8" >> /etc/environment
-echo "HOST_PROXY=$3" >> /etc/environment
 
 EOF

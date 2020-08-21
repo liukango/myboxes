@@ -6,33 +6,23 @@
 # [VM] name, cpus, memory(MB), private_net(host noly) ip
 # [OS] root-password, http(s)_proxy, packages to install
 ######################
+
 vms = {
   :centos => ['bento/centos-8', '1', '2048', '10.3.3.5'],
   :ubuntu => ['bento/ubuntu-18.04', '1', '2048', '10.3.3.6'],
 }
-# Set password for root
-root_passwd = "kk"
-# Http proxy will be set into /etc/environment as $HOST_PROXY,
-# the given proxy should be accessable from within guest OS.
-host_proxy = "http://10.2.2.2:8118"
 # Packages you want to install during provisioning
 packages_preinstalled = "vim git curl wget tree"
 # Turn on/off nested virtulization
 nested_virtulization = "off"
 # Make dynamic IP address to static IP, useful running server-like applications
 make_dhcp_static = true
-# Install zsh and oh-my-zsh(copied from Host)
-install_zsh = true
-# Install tmux2 along with oh-my-tmux
-install_tmux = true
-# Install docker and setup nessary configs like registry
-install_docker = false
+pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
 ######################
 ### End of Configurations
 
 ### Config Virtualbox and VMs.
 ######################
-pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
 Vagrant.configure("2") do |config|
 
   # The following three config needs vagrant-hostmanager plugin installed: 'vagrant plugin install vagrant-hostmanager'
@@ -67,7 +57,7 @@ Vagrant.configure("2") do |config|
   vms.each do |m_name, m_config|
     config.vm.define "#{m_name}" do |m|
 
-      m.vm.synced_folder "~/", "/media/psf/Home"
+      # m.vm.synced_folder "~/", "/media/psf/Home"
 
       m.vm.box = "#{m_config[0]}"
       m.vm.hostname = "#{m_name}"
@@ -81,38 +71,19 @@ Vagrant.configure("2") do |config|
         prl.cpus = "#{m_config[1]}"
       end
 
-
       ### Provisionings that will be executed
       # Basic OS configurations: root password, mirrors, etc.
+      m.vm.provision "file", source: "~/.ssh", destination: "/tmp/host.ssh"
       m.vm.provision "prepare os", type: "shell" do |s|
         s.path = "#{pvurl_prefix}/shell/bootstrap-os.sh"
-        s.args = ["#{root_passwd}", "#{packages_preinstalled}", "#{host_proxy}"]
+        s.args = ["#{packages_preinstalled}"]
       end
-
-      # SSH passwordless for root user.
-      m.vm.provision "file", source: "~/.ssh", destination: "/tmp/host.ssh"
-      m.vm.provision "ssh passwordless", type: "shell", path: "#{pvurl_prefix}/shell/ssh-passwordless.sh"
 
       if make_dhcp_static
         # The first NIC is set to DHCP by default, use the following script to set to STATIC, with IP address not changed.
         m.vm.provision "dhcp to static", type: "shell", path: "#{pvurl_prefix}/shell/dhcp2static.sh"
       end
       
-      if install_zsh
-        $script = <<-SCRIPT
-        sudo su root -c "export HOST_PROXY=http://10.2.2.2:8118; curl -fsSL https://gitee.com/get-set/myboxes/raw/master/provisioning/shell/prep-zsh.sh | sh"
-        SCRIPT
-        m.vm.provision "install zsh", type: "shell", inline: $script
-      end
-
-      if install_tmux
-        m.vm.provision "install tmux", type: "shell", path: "#{pvurl_prefix}/shell/prep-tmux.sh"
-      end
-
-      if install_docker
-        m.vm.provision "install docker", type: "shell", path: "#{pvurl_prefix}/shell/prep-docker.sh"
-      end
-
     end
   end
 
