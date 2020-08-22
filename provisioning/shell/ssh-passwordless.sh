@@ -11,6 +11,6 @@ cat /tmp/host.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod 600 /root/.s
 rm -rf /tmp/host.ssh
 
 sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
-sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
-systemctl restart sshd
+#sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
+#systemctl restart sshd
 EOF

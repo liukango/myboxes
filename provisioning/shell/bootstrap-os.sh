@@ -20,9 +20,9 @@ cp /tmp/host.ssh/id_rsa /root/.ssh/ && chmod 600 /root/.ssh/id_rsa
 cp /tmp/host.ssh/id_rsa.pub /root/.ssh/ && chmod 644 /root/.ssh/id_rsa.pub
 cat /tmp/host.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys
 rm -rf /tmp/host.ssh
-sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
-sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
-systemctl restart sshd
+# sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
+# sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
+# systemctl restart sshd
 
 # 2. set timezone
 timedatectl set-timezone Asia/Shanghai
