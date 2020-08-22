@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# Get main nic name
 NICNAME=$(netstat -nr | grep "^0.0.0.0" | awk '{print $8}')
 
+# Check if it has IP configed
 ip a show dev ${NICNAME} | grep -q "inet " || exit 0
 
 IFS='/'
@@ -9,8 +11,8 @@ DHCP_ADDR=($(ip a show dev ${NICNAME} | grep "inet " | awk '{print $2}'))
 unset IFS
 GATEWAY=$(ip r | grep "default" | awk '{print $3}')
 
-# If CentOS
-cat /etc/os-release | grep -qi "centos"
+# If CentOS 7
+cat /etc/os-release | grep -qi "centos linux 7"
 if [ $? -eq 0 ]  ; then
 
     IFCFG_FILE="/etc/sysconfig/network-scripts/ifcfg-${NICNAME}"
@@ -33,8 +35,23 @@ if [ $? -eq 0 ]  ; then
     sudo systemctl enable network &> /dev/null
     sudo systemctl restart network &> /dev/null
 fi
-# If Ubuntu
-cat /etc/os-release | grep -qi "ubuntu"
+
+# If CentOS 8
+cat /etc/os-release | grep -qi "centos linux 8"
+if [ $? -eq 0 ]  ; then
+
+  nmcli c mod ${NICNAME} ipv4.address ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}
+  nmcli c mod ${NICNAME} ipv4.gateway ${GATEWAY}
+  nmcli c mod ${NICNAME} ipv4.method manual
+  nmcli c mod ${NICNAME} ipv6.method disabled
+  nmcli c mod ${NICNAME} autoconnect yes
+  nmcli c up ${NICNAME} > /dev/null
+  ip a show ${NICNAME}
+
+fi
+
+# If Ubuntu 18.04
+cat /etc/os-release | grep -qi "ubuntu 18.04"
 if [ $? -eq 0 ]  ; then
 
     IFCFG_FILE="/etc/netplan/01-netcfg.yaml"
@@ -42,6 +59,7 @@ if [ $? -eq 0 ]  ; then
     grep -A 1 "${NICNAME}" ${IFCFG_FILE} | grep -Eq "dhcp4: (true|yes)" || exit 0
     sudo sed -i "/${NICNAME}/,+1d" ${IFCFG_FILE}
     echo "    eth0:" | sudo tee -a ${IFCFG_FILE}
+    echo "      link-local: []" | sudo tee -a ${IFCFG_FILE}
     echo "      dhcp4: false" | sudo tee -a ${IFCFG_FILE}
     echo "      addresses:" | sudo tee -a ${IFCFG_FILE}
     echo "        - ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}" | sudo tee -a ${IFCFG_FILE}
