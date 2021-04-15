@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Get main nic name
-NICNAME=$(netstat -nr | grep "^0.0.0.0" | awk '{print $8}')
+# NICNAME=$(netstat -nr | grep "^0.0.0.0" | awk '{print $8}')
+NICNAME=$(ip r | grep "default" | awk '{print $5}')
 
 # Check if it has IP configed
 ip a show dev ${NICNAME} | grep -q "inet " || exit 0
