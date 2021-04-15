@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Apply to CentOS7/8, Debian8/9/10, Ubuntu18/20
+
 # Get main nic name
 # NICNAME=$(netstat -nr | grep "^0.0.0.0" | awk '{print $8}')
 NICNAME=$(ip r | grep "default" | awk '{print $5}')

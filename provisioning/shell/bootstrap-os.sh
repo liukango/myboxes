@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Apply to CentOS7/8, Debian8/9/10, Ubuntu18/20
+
 # Common envirenment virables
 APT_MIRROR_HOST="mirrors.aliyun.com"
 PREINSTALLED_PACKAGES=${1:-"vim"}
@@ -35,22 +37,21 @@ echo "LANG=en_US.utf-8" >> /etc/environment
 echo "LC_ALL=en_US.utf-8" >> /etc/environment
 
 # 5. install necessary packages
-cat /etc/os-release | grep -Eqi "centos linux 7" && \
-    yum install -y epel-release > /dev/null && \
-    curl -sSL http://mirrors.aliyun.com/repo/epel-7.repo -o /etc/yum.repos.d/epel.repo \
-    || true
-cat /etc/os-release | grep -Eqi "centos linux 8" && \
-    yum install -y https://mirrors.aliyun.com/epel/epel-release-latest-8.noarch.rpm > /dev/null && \
-    sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirrors.aliyun.com|' /etc/yum.repos.d/epel* && \
-    sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel* \
-    || true
+# cat /etc/os-release | grep -Eqi "centos linux 7" && \
+#     yum install -y epel-release > /dev/null && \
+#     curl -sSL http://mirrors.aliyun.com/repo/epel-7.repo -o /etc/yum.repos.d/epel.repo \
+#     || true
+# cat /etc/os-release | grep -Eqi "centos linux 8" && \
+#     yum install -y https://mirrors.aliyun.com/epel/epel-release-latest-8.noarch.rpm > /dev/null && \
+#     sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirrors.aliyun.com|' /etc/yum.repos.d/epel* && \
+#     sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel* \
+#     || true
 which yum &> /dev/null && \
     echo "Exec: yum makecache ..." && \
     yum makecache &> /dev/null && \
     echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
     yum install -y ${PREINSTALLED_PACKAGES} > /dev/null \
     || true
-
 cat /etc/os-release | grep -Eqi "ubuntu" && \
     cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
     sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list \

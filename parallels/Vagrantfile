@@ -8,8 +8,9 @@
 ######################
 
 vms = {
-  :centos => ['bento/centos-8', '1', '2048', '10.3.3.5'],
-  :ubuntu => ['bento/ubuntu-18.04', '1', '2048', '10.3.3.6'],
+  :centos => ['generic/centos8', '1', '2048', '10.3.3.5'],
+  :debian => ['generic/debian10', '1', '2048', '10.3.3.6'],
+  :ubuntu => ['generic/ubuntu2004', '1', '2048', '10.3.3.7'],
 }
 # Packages you want to install during provisioning
 packages_preinstalled = "vim git curl wget tree"
@@ -26,9 +27,9 @@ pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
 Vagrant.configure("2") do |config|
 
   # The following three config needs vagrant-hostmanager plugin installed: 'vagrant plugin install vagrant-hostmanager'
-  config.hostmanager.enabled = true
-  config.hostmanager.manage_host = true
-  config.hostmanager.manage_guest = true
+  # config.hostmanager.enabled = true
+  # config.hostmanager.manage_host = true
+  # config.hostmanager.manage_guest = true
 
   config.vm.box_check_update = false
 
