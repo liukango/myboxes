@@ -11,8 +11,8 @@ DHCP_ADDR=($(ip a show dev ${NICNAME} | grep "inet " | awk '{print $2}'))
 unset IFS
 GATEWAY=$(ip r | grep "default" | awk '{print $3}')
 
-# If CentOS 7
-cat /etc/os-release | grep -qi "centos linux 7"
+# If CentOS 7 / CentOS Stream 8
+cat /etc/os-release | grep -Eqi "centos (linux 7|stream 8)"
 if [ $? -eq 0 ]  ; then
 
     IFCFG_FILE="/etc/sysconfig/network-scripts/ifcfg-${NICNAME}"
@@ -37,7 +37,7 @@ if [ $? -eq 0 ]  ; then
 fi
 
 # If CentOS 8
-cat /etc/os-release | grep -qi "centos linux 8"
+cat /etc/os-release | grep -Eqi "centos linux 8"
 if [ $? -eq 0 ]  ; then
 
   nmcli c mod ${NICNAME} ipv4.address ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}
@@ -50,8 +50,8 @@ if [ $? -eq 0 ]  ; then
 
 fi
 
-# If Ubuntu 18.04
-cat /etc/os-release | grep -qi "ubuntu 18.04"
+# If Ubuntu 18.04 / 20.04
+cat /etc/os-release | grep -Eqi "ubuntu (18.04|20.04)"
 if [ $? -eq 0 ]  ; then
 
     IFCFG_FILE="/etc/netplan/01-netcfg.yaml"
