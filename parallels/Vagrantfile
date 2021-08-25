@@ -1,23 +1,29 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-
 ### Configurations 
 # [VM] name, cpus, memory(MB), private_net(host noly) ip
 # [OS] root-password, http(s)_proxy, packages to install
 ######################
 
 vms = {
-  :centos => ['generic/centos8', '1', '2048', '10.3.3.5'],
-  :debian => ['generic/debian10', '1', '2048', '10.3.3.6'],
-  :ubuntu => ['generic/ubuntu2004', '1', '2048', '10.3.3.7'],
+  :centos7 => ['bento/centos-7', '1', '2048', '10.3.3.10'],
+  :centos8 => ['bento/centos-8', '1', '2048', '10.3.3.11'],
+  :ubuntu18 => ['bento/ubuntu-18.04', '1', '2048', '10.3.3.12'],
+  :ubuntu20 => ['bento/ubuntu-20.04', '1', '2048', '10.3.3.13'],
 }
 # Packages you want to install during provisioning
-packages_preinstalled = "vim git curl wget tree"
-# Turn on/off nested virtulization
-nested_virtulization = "off"
+packages_preinstalled = "vim curl wget tree"
+
+# Linked clone
+linked_clone = false
+
 # Make dynamic IP address to static IP, useful running server-like applications
 make_dhcp_static = true
+
+# Turn on/off nested virtulization
+nested_virtulization = "off"
+
 pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
 ######################
 ### End of Configurations
@@ -36,20 +42,26 @@ Vagrant.configure("2") do |config|
   # common configurations
   config.vm.provider "parallels" do |prl|
     prl.check_guest_tools = false
+    prl.linked_clone = "#{linked_clone}"
 
-    # find configurations at https://download.parallels.com/desktop/v16/docs/en_US/Parallels%20Desktop%20Pro%20Edition%20Command-Line%20Reference.pdf
+    ### find configurations at https://download.parallels.com/desktop/v16/docs/en_US/Parallels%20Desktop%20Pro%20Edition%20Command-Line%20Reference.pdf
+    # Videos
     prl.customize ["set", :id, "--3d-accelerate", "off"]
     prl.customize ["set", :id, "--vertical-sync", "off"]
     prl.customize ["set", :id, "--high-resolution", "off"]
-    # --autostart <off | open-window | start-app | start-host | user-login>
-    prl.customize ["set", :id, "--autostart", "off"]
-    # prl.customize ["set", :id, "--autostart-delay", "60"]  # seconds
-    prl.customize ["set", :id, "--adaptive-hypervisor", "on"]
-    prl.customize ["set", :id, "--nested-virt", "#{nested_virtulization}"]
-    prl.customize ["set", :id, "--pmu-virt", "#{nested_virtulization}"]
-    prl.customize ["set", :id, "--sync-host-printers", "off"]
+    # Mouse & Keyboard
     prl.customize ["set", :id, "--smart-mouse-optimize", "off"]
     prl.customize ["set", :id, "--keyboard-optimize", "off"]
+    # Startup & Shutdown
+    prl.customize ["set", :id, "--autostart", "off"] # <off | open-window | start-app | start-host | user-login>
+    # prl.customize ["set", :id, "--autostart-delay", "60"]  # seconds
+    prl.customize ["set", :id, "--autostop", "suspend"] # <suspend | shutdown>
+    prl.customize ["set", :id, "--startup-view", "headless"] # <suspend | shutdown>
+    prl.customize ["set", :id, "--on-shutdown", "close"] # <window | close | quit>
+    prl.customize ["set", :id, "--on-window-close", "keep-running"] # <suspend | shutdown | stop | ask | keep-running>
+    # Optimization
+    prl.customize ["set", :id, "--nested-virt", "#{nested_virtulization}"]
+    prl.customize ["set", :id, "--isolate-vm", "on"]
 
   end
 

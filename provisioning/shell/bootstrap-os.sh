@@ -46,23 +46,23 @@ echo "LC_ALL=en_US.utf-8" >> /etc/environment
 #     sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirrors.aliyun.com|' /etc/yum.repos.d/epel* && \
 #     sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel* \
 #     || true
-which yum &> /dev/null && \
-    echo "Exec: yum makecache ..." && \
-    yum makecache &> /dev/null && \
-    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
-    yum install -y ${PREINSTALLED_PACKAGES} > /dev/null \
-    || true
-cat /etc/os-release | grep -Eqi "ubuntu" && \
-    cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
-    sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list \
-    || true
-which apt &> /dev/null && \
-    export DEBIAN_FRONTEND=noninteractive && \
-    echo "Exec: apt update ..." && \
-    apt-get update &> /dev/null && \
-    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
-    apt-get -qq install -y ${PREINSTALLED_PACKAGES} > /dev/null \
-    || true
+#which yum &> /dev/null && \
+#    echo "Exec: yum makecache ..." && \
+#    yum makecache &> /dev/null && \
+#    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
+#    yum install -y ${PREINSTALLED_PACKAGES} > /dev/null \
+#    || true
+#cat /etc/os-release | grep -Eqi "ubuntu" && \
+#    cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
+#    sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list \
+#    || true
+#which apt &> /dev/null && \
+#    export DEBIAN_FRONTEND=noninteractive && \
+#    echo "Exec: apt update ..." && \
+#    apt-get update &> /dev/null && \
+#    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
+#    apt-get -qq install -y ${PREINSTALLED_PACKAGES} > /dev/null \
+#    || true
 
 # 6. change user "vagrant" privilege
 cat /etc/os-release | grep -Eqi "centos linux" && \
