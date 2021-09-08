@@ -12,10 +12,15 @@ vms = {
   :ubuntu18 => ['bento/ubuntu-18.04', '1', '2048', '10.1.1.13'],
   :ubuntu20 => ['bento/ubuntu-20.04', '1', '2048', '10.1.1.14'],
 }
+
 # Packages you want to install during provisioning
 packages_preinstalled = "vim curl wget tree"
+
 # Turn on/off nested virtulization
 nested_virtulization = "off"
+
+# Linked clone (`true` for temporary usage)
+linked_clone = false
 
 pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
 ######################
@@ -34,7 +39,7 @@ Vagrant.configure("2") do |config|
 
   # common configurations
   config.vm.provider "virtualbox" do |vb|
-    vb.linked_clone = true
+    vb.linked_clone = linked_clone
     vb.customize ["modifyvm", :id, "--groups", "/#{group}"]
     vb.customize ["modifyvm", :id, "--nested-hw-virt", "#{nested_virtulization}"]
     # pagefusion cannot be enabled on MacOS.
