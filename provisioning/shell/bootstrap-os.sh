@@ -1,76 +1,65 @@
 #!/bin/bash
 
-# Apply to CentOS7/8, Debian8/9/10, Ubuntu18/20
+# Tested on CentOS7/8, Debian8/9/10, Ubuntu18/20
 
 # Common envirenment virables
-APT_MIRROR_HOST="mirrors.aliyun.com"
-PREINSTALLED_PACKAGES=${1:-"vim"}
+NEW_USER=${1}
+[ "${1}" ] && NEW_USER_HOME="/home/${NEW_USER}"
+PREINSTALLED_PACKAGES=${2}
 
 # OS bootstrap:
 # 1. ssh passwordless
-# 2. set timezone
-# 3. disable selinux
-# 4. set locale
-# 5. install necessary packages
-# 6. change user "vagrant" privilege
+# 2. create user ${NEW_USER}
+# 3. set timezone
+# 4. disable selinux
+# 5. set locale
+# 6. install necessary packages
 
 sudo -s << EOF
-
 # 1. ssh passwordless
 mkdir -p /root/.ssh && chmod 700 /root/.ssh
 cp /tmp/host.ssh/id_rsa /root/.ssh/ && chmod 600 /root/.ssh/id_rsa
 cp /tmp/host.ssh/id_rsa.pub /root/.ssh/ && chmod 644 /root/.ssh/id_rsa.pub
 cat /tmp/host.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys
 rm -rf /tmp/host.ssh
-sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
-sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
+# sed -i '/PermitRootLogin/c PermitRootLogin yes' /etc/ssh/sshd_config
+# sed -i '/PasswordAuthentication/c PasswordAuthentication yes' /etc/ssh/sshd_config
 systemctl restart sshd
 
-# 2. set timezone
+# 2. create user "${NEW_USER}"
+if [ "${NEW_USER}" ]; then
+    groupadd -g 666 ${NEW_USER} && useradd -g ${NEW_USER} -u 666 -m -s /bin/bash ${NEW_USER}
+    cat /etc/group | grep -Eqi "sudo" && usermod -aG sudo ${NEW_USER}
+    cat /etc/group | grep -Eqi "wheel" && usermod -aG wheel ${NEW_USER}
+    cp -r /root/.ssh ${NEW_USER_HOME}
+    chown ${NEW_USER}:${NEW_USER} -R ${NEW_USER_HOME}/.ssh
+fi
+
+# 3. set timezone
 timedatectl set-timezone Asia/Shanghai
 
-# 3. disable selinux
+# 4. disable selinux
 cat /etc/issue | grep -Eqi "centos" && sed -i '/^SELINUX=/c SELINUX=disabled' /etc/selinux/config && setenforce 0 || true
 
-# 4. set English locale
+# 5. set English locale
 echo "LANG=en_US.utf-8" >> /etc/environment
 echo "LC_ALL=en_US.utf-8" >> /etc/environment
 
-# 5. install necessary packages
-# cat /etc/os-release | grep -Eqi "centos linux 7" && \
-#     yum install -y epel-release > /dev/null && \
-#     curl -sSL http://mirrors.aliyun.com/repo/epel-7.repo -o /etc/yum.repos.d/epel.repo \
-#     || true
-# cat /etc/os-release | grep -Eqi "centos linux 8" && \
-#     yum install -y https://mirrors.aliyun.com/epel/epel-release-latest-8.noarch.rpm > /dev/null && \
-#     sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirrors.aliyun.com|' /etc/yum.repos.d/epel* && \
-#     sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel* \
-#     || true
-#which yum &> /dev/null && \
-#    echo "Exec: yum makecache ..." && \
-#    yum makecache &> /dev/null && \
-#    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
-#    yum install -y ${PREINSTALLED_PACKAGES} > /dev/null \
-#    || true
-#cat /etc/os-release | grep -Eqi "ubuntu" && \
-#    cp /etc/apt/sources.list /etc/apt/sources.list.bk && \
-#    sed -i 's/archive.ubuntu.com/${APT_MIRROR_HOST}/g;s/security.ubuntu.com/${APT_MIRROR_HOST}/g' /etc/apt/sources.list \
-#    || true
-#which apt &> /dev/null && \
-#    export DEBIAN_FRONTEND=noninteractive && \
-#    echo "Exec: apt update ..." && \
-#    apt-get update &> /dev/null && \
-#    echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
-#    apt-get -qq install -y ${PREINSTALLED_PACKAGES} > /dev/null \
-#    || true
-
-# 6. change user "vagrant" privilege
-cat /etc/os-release | grep -Eqi "centos linux" && \
-    usermod -aG wheel vagrant && \
-    sed -i "s/^%wheel/#&/; s/^# %wheel/%wheel/" /etc/sudoers \
-    || true
-cat /etc/os-release | grep -Eqi "(ubuntu|debina)" && \
-    sed -i '/^%sudo/s/) ALL/) NOPASSWD:ALL/' /etc/sudoers \
-    || true
+# 6. install necessary packages
+if [ "${PREINSTALLED_PACKAGES}" ]; then
+    which yum &> /dev/null && \
+        echo "Exec: yum makecache ..." && \
+        yum makecache &> /dev/null && \
+        echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
+        yum install -y ${PREINSTALLED_PACKAGES} > /dev/null \
+        || true
+    which apt &> /dev/null && \
+        export DEBIAN_FRONTEND=noninteractive && \
+        echo "Exec: apt update ..." && \
+        apt-get update &> /dev/null && \
+        echo "Installing packages: ${PREINSTALLED_PACKAGES} ..." && \
+        apt-get -qq install -y ${PREINSTALLED_PACKAGES} > /dev/null \
+        || true
+fi
 
 EOF
