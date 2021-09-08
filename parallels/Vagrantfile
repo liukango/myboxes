@@ -19,7 +19,8 @@ new_user = "kang"
 
 # Packages you want to install during provisioning
 # If not blank(""), the installation process may cost more time
-packages_preinstalled = "vim curl wget tree"
+# packages_preinstalled = "vim curl wget tree"
+packages_preinstalled = ""
 
 # Linked clone (`true` for temporary usage)
 linked_clone = false

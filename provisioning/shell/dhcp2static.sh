@@ -13,7 +13,7 @@ ip a show dev ${NICNAME} | grep -q "inet " || exit 0
 IFS='/'
 DHCP_ADDR=($(ip a show dev ${NICNAME} | grep "inet " | awk '{print $2}'))
 unset IFS
-GATEWAY=$(ip r | grep "default" | awk '{print $3}')
+GATEWAY=$(ip r | grep -Ev "(10.0.2|169.24)" | grep "default" | awk '{print $3}')
 
 echo "dhcp -> static: ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}"
 
@@ -34,9 +34,9 @@ if [ $? -eq 0 ]  ; then
 
   echo "IPADDR=${DHCP_ADDR[0]}" | sudo tee -a ${IFCFG_FILE}
   echo "PREFIX=${DHCP_ADDR[1]}" | sudo tee -a ${IFCFG_FILE}
-  echo "GATEWAY=${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
-  echo "DNS1=${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
-  echo "DNS2=114.114.114.114" | sudo tee -a ${IFCFG_FILE}
+  [ "${GATEWAY}" ] && echo "GATEWAY=${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
+  echo "DNS1=114.114.114.114" | sudo tee -a ${IFCFG_FILE}
+  echo "DNS2=8.8.8.8" | sudo tee -a ${IFCFG_FILE}
 
   sudo systemctl enable network &> /dev/null
   sudo systemctl restart network &> /dev/null
@@ -48,7 +48,7 @@ if [ $? -eq 0 ]  ; then
 
   C_UUID=$(nmcli c show | grep "${NICNAME}" | grep -Eo '[0-9a-z-]{20,}')
   nmcli c mod ${C_UUID} ipv4.address ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}
-  nmcli c mod ${C_UUID} ipv4.gateway ${GATEWAY}
+  [ "${GATEWAY}" ] && nmcli c mod ${C_UUID} ipv4.gateway ${GATEWAY}
   nmcli c mod ${C_UUID} ipv4.method manual
   nmcli c mod ${C_UUID} ipv6.method disabled
   nmcli c mod ${C_UUID} autoconnect yes
@@ -74,9 +74,9 @@ if [ $? -eq 0 ]  ; then
   echo "      dhcp4: false" | sudo tee -a ${IFCFG_FILE}
   echo "      addresses:" | sudo tee -a ${IFCFG_FILE}
   echo "        - ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}" | sudo tee -a ${IFCFG_FILE}
-  echo "      gateway4: ${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
+  [ "${GATEWAY}" ] && echo "      gateway4: ${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
   echo "      nameservers:" | sudo tee -a ${IFCFG_FILE}
-  echo "          addresses: [${GATEWAY},114.114.114.114]" | sudo tee -a ${IFCFG_FILE}
+  echo "          addresses: [114.114.114.114,8.8.8.8]" | sudo tee -a ${IFCFG_FILE}
 
   sudo netplan apply
 fi
@@ -93,7 +93,7 @@ if [ $? -eq 0 ]  ; then
 
   sed -i "/iface\ ${NICNAME}\ inet/ciface\ ${NICNAME}\ inet\ static" ${IFCFG_FILE}
   sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ dns-nameserver 114.114.114.114" ${IFCFG_FILE}
-  sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ gateway ${GATEWAY}" ${IFCFG_FILE}
+  [ "${GATEWAY}" ] && sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ gateway ${GATEWAY}" ${IFCFG_FILE}
   sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ address ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}
 " ${IFCFG_FILE}
 
