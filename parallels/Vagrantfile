@@ -39,9 +39,9 @@ pvurl_prefix="https://gitee.com/get-set/myboxes/raw/master/provisioning"
 Vagrant.configure("2") do |config|
 
   # The following three config needs vagrant-hostmanager plugin installed: 'vagrant plugin install vagrant-hostmanager'
-  # config.hostmanager.enabled = true
+  config.hostmanager.enabled = true
   # config.hostmanager.manage_host = true
-  # config.hostmanager.manage_guest = true
+  config.hostmanager.manage_guest = true
 
   config.vm.box_check_update = false
 

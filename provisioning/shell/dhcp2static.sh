@@ -2,9 +2,10 @@
 
 # Tested on CentOS7/8, Debian8/9/10, Ubuntu18/20
 
-# Get main nic name
-# NICNAME=$(netstat -nr | grep "^0.0.0.0" | awk '{print $8}')
-NICNAME=$(ip r | grep "default" | awk '{print $5}')
+# Apply only for provider 'parallels' and 'virtualbox' with the following situations:
+#   'parallels' usually setup one nic
+#   'virtualbox' usually setup two nic, one for NAT(10.0.2.15), and the other for private_network
+NICNAME=$(ip r | grep -Ev "(10.0.2|169.254)" | tail -n 1 | awk '{print $3}')
 
 # Check if it has IP configed
 ip a show dev ${NICNAME} | grep -q "inet " || exit 0
