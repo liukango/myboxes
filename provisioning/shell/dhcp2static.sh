@@ -35,7 +35,7 @@ if [ $? -eq 0 ]  ; then
   echo "IPADDR=${DHCP_ADDR[0]}" | sudo tee -a ${IFCFG_FILE}
   echo "PREFIX=${DHCP_ADDR[1]}" | sudo tee -a ${IFCFG_FILE}
   [ "${GATEWAY}" ] && echo "GATEWAY=${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
-  echo "DNS1=114.114.114.114" | sudo tee -a ${IFCFG_FILE}
+  echo "DNS1=${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
   echo "DNS2=8.8.8.8" | sudo tee -a ${IFCFG_FILE}
 
   sudo systemctl enable network &> /dev/null
@@ -76,13 +76,13 @@ if [ $? -eq 0 ]  ; then
   echo "        - ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}" | sudo tee -a ${IFCFG_FILE}
   [ "${GATEWAY}" ] && echo "      gateway4: ${GATEWAY}" | sudo tee -a ${IFCFG_FILE}
   echo "      nameservers:" | sudo tee -a ${IFCFG_FILE}
-  echo "          addresses: [114.114.114.114,8.8.8.8]" | sudo tee -a ${IFCFG_FILE}
+  echo "          addresses: [${GATEWAY},8.8.8.8]" | sudo tee -a ${IFCFG_FILE}
 
   sudo netplan apply
 fi
 
 # If debian 8 - 10
-cat /etc/os-release | grep -Eqi "debian gnu/linux (8|9|10)"
+cat /etc/os-release | grep -Eqi "debian gnu/linux (8|9|10|11)"
 if [ $? -eq 0 ]  ; then
   IFCFG_FILE="/etc/network/interfaces"
   [ -f "${IFCFG_FILE}" ] || exit 0
@@ -92,7 +92,7 @@ if [ $? -eq 0 ]  ; then
   grep -q "iface ${NICNAME} inet static" ${IFCFG_FILE} && exit 0
 
   sed -i "/iface\ ${NICNAME}\ inet/ciface\ ${NICNAME}\ inet\ static" ${IFCFG_FILE}
-  sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ dns-nameserver 114.114.114.114" ${IFCFG_FILE}
+  sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ dns-nameserver ${GATEWAY},8.8.8.8" ${IFCFG_FILE}
   [ "${GATEWAY}" ] && sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ gateway ${GATEWAY}" ${IFCFG_FILE}
   sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ address ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}
 " ${IFCFG_FILE}
