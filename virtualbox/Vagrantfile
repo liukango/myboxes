@@ -15,9 +15,8 @@ vms = {
   :ubuntu20 => ['bento/ubuntu-20.04', '1', '2048'],
 }
 
-# A new user you want to create besides "vagrant"
-# If blank(""), the ssh-passwordless will be set on user "root"
-new_user = "kang"
+# A new user you want to create on uid=666 and gid=666
+my_user = "kang"
 
 # Packages you want to install during provisioning
 # If not blank(""), the installation process may cost more time
@@ -67,7 +66,7 @@ Vagrant.configure("2") do |config|
     config.vm.define "#{m_name}" do |m|
 
       # If centos node exists, intall vagrant-vbguest plugin to use synced folder (vagrant plugin install vagrant-vbguest)
-      # m.vm.synced_folder "~/.Virtualboxes/.share/#{m_name}", "/srv", create: true, , SharedFoldersEnableSymlinksCreate: false
+      # m.vm.synced_folder "~/", "/media/psf/Home", owner: "#{my_user}", group: "#{my_user}"
 
       m.vm.box = "#{m_config[0]}"
       m.vm.hostname = "#{m_name}"
@@ -87,7 +86,7 @@ Vagrant.configure("2") do |config|
       m.vm.provision "file", source: "~/.ssh", destination: "/tmp/host.ssh"
       m.vm.provision "prepare os", type: "shell" do |s|
         s.path = "#{pvurl_prefix}/shell/bootstrap-os.sh"
-        s.args = ["#{new_user}","#{packages_preinstalled}"]
+        s.args = ["#{my_user}","#{packages_preinstalled}"]
       end
 
       if make_dhcp_static
