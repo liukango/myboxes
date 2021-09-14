@@ -2,8 +2,7 @@
 # vi: set ft=ruby :
 
 ### Configurations 
-# [VM] name, cpus, memory(MB), ip(private), group name
-# [OS] root-password, http(s)_proxy, packages to install
+# [VM] name, cpus, memory(MB)
 ######################
 group = "templates"
 vms = {
@@ -43,7 +42,7 @@ Vagrant.configure("2") do |config|
   # The following three config needs vagrant-hostmanager plugin installed: 'vagrant plugin install vagrant-hostmanager'
   config.hostmanager.enabled = true
   config.hostmanager.manage_host = true
-  config.hostmanager.manage_guest = true
+  config.hostmanager.manage_guest = false
   config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
     if vm.id
       `VBoxManage guestproperty get #{vm.id} "/VirtualBox/GuestInfo/Net/1/V4/IP"`.split()[1]
@@ -65,9 +64,6 @@ Vagrant.configure("2") do |config|
   vms.each do |m_name, m_config|
     config.vm.define "#{m_name}" do |m|
 
-      # If centos node exists, intall vagrant-vbguest plugin to use synced folder (vagrant plugin install vagrant-vbguest)
-      # m.vm.synced_folder "~/", "/media/psf/Home", owner: "#{my_user}", group: "#{my_user}"
-
       m.vm.box = "#{m_config[0]}"
       m.vm.hostname = "#{m_name}"
 
@@ -75,11 +71,13 @@ Vagrant.configure("2") do |config|
       # m.vm.network "private_network", ip: "#{m_config[3]}"
       m.vm.network "private_network", type: "dhcp"
 
-      m.vm.provider "virtualbox" do |vb|
-        vb.name = "#{m_name}"
-        vb.memory = "#{m_config[2]}"
-        vb.cpus = "#{m_config[1]}"
+      m.vm.provider "virtualbox" do |vm|
+        vm.name = "#{m_name}"
+        vm.memory = "#{m_config[2]}"
+        vm.cpus = "#{m_config[1]}"
       end
+
+      # m.vm.synced_folder "~/", "/host/home", mount_options: ["uid=666", "gid=666"]
 
       ### Provisionings that will be executed
       # Basic OS configurations: root password, mirrors, etc.

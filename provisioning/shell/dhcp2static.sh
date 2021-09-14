@@ -82,16 +82,6 @@ if [ $? -eq 0 ]  ; then
 
   sudo netplan apply
 
-  # Ubuntu use systemd-resolved to manage nameservers
-  RESOLVED_FILE="/etc/systemd/resolved.conf"
-  [ -f "${RESOLVED_FILE}" ] || exit 0
-  sudo cp ${RESOLVED_FILE} ${RESOLVED_FILE}.back
-  echo -e "\n#Appended by provisioning script: dhcp2static.sh" >> ${RESOLVED_FILE}
-  [ "${GATEWAY}" ] && echo "DNS=${GATEWAY} 8.8.8.8" >> ${RESOLVED_FILE}
-  echo "FallbackDNS=114.114.114.114" >> ${RESOLVED_FILE}
-  echo "Domains=shared" >> ${RESOLVED_FILE}
-  systemctl restart systemd-resolved
-
 fi
 
 # If debian 8 - 11
@@ -104,18 +94,31 @@ if [ $? -eq 0 ]  ; then
   # Exit if already static
   grep -q "iface ${NICNAME} inet static" ${IFCFG_FILE} && exit 0
 
-  sed -i "/iface\ ${NICNAME}\ inet/ciface\ ${NICNAME}\ inet\ static" ${IFCFG_FILE}
-  sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ dns-nameserver ${GATEWAY},8.8.8.8,114.114.114.114" ${IFCFG_FILE}
-  [ "${GATEWAY}" ] && sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ gateway ${GATEWAY}" ${IFCFG_FILE}
-  sed -i "/iface\ ${NICNAME}\ inet/a\ \ \ \ address ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}
+  sed -i "/iface\ ${NICNAME}\ inet\ dhcp/ciface\ ${NICNAME}\ inet\ static" ${IFCFG_FILE}
+  sed -i "/iface\ ${NICNAME}\ inet\ /a\ \ \ \ dns-nameserver ${GATEWAY},8.8.8.8,114.114.114.114" ${IFCFG_FILE}
+  [ "${GATEWAY}" ] && sed -i "/iface\ ${NICNAME}\ inet\ /a\ \ \ \ gateway ${GATEWAY}" ${IFCFG_FILE}
+  sed -i "/iface\ ${NICNAME}\ inet\ /a\ \ \ \ address ${DHCP_ADDR[0]}/${DHCP_ADDR[1]}
 " ${IFCFG_FILE}
 
   ip a show ${NICNAME}
 
-  systemctl disable --now systemd-resolved &> /dev/null
-  echo "# Overwrite by vagrant provisioning dhcp2static.sh" > /etc/resolv.conf
-  [ "${GATEWAY}" ] && echo "nameserver=${GATEWAY}" >> /etc/resolv.conf
-  echo "nameserver=8.8.8.8" >> /etc/resolv.conf
-  echo "nameserver=114.114.114.114" >> /etc/resolv.conf
+# systemctl disable --now systemd-resolved &> /dev/null
+# echo "# Overwrite by vagrant provisioning dhcp2static.sh" > /etc/resolv.conf
+# [ "${GATEWAY}" ] && echo "nameserver=${GATEWAY}" >> /etc/resolv.conf
+# echo "nameserver=8.8.8.8" >> /etc/resolv.conf
+# echo "nameserver=114.114.114.114" >> /etc/resolv.conf
 fi
 
+# Ubuntu & Debian use systemd-resolved to manage nameservers
+systemctl list-unit-files | grep -qi systemd-resolved
+if [ $? -eq 0 ]  ; then
+  RESOLVED_FILE="/etc/systemd/resolved.conf"
+  [ -f "${RESOLVED_FILE}" ] || exit 0
+  sudo cp ${RESOLVED_FILE} ${RESOLVED_FILE}.back
+  echo -e "\n#Appended by provisioning script: dhcp2static.sh" >> ${RESOLVED_FILE}
+  [ "${GATEWAY}" ] && echo "DNS=${GATEWAY} 8.8.8.8" >> ${RESOLVED_FILE} || echo "DNS=8.8.8.8" >> ${RESOLVED_FILE} 
+  echo "FallbackDNS=114.114.114.114" >> ${RESOLVED_FILE}
+  echo "Domains=shared" >> ${RESOLVED_FILE}
+  systemctl enable systemd-resolved &> /dev/null
+  systemctl restart systemd-resolved
+fi
