@@ -35,6 +35,9 @@ if [ "${NEW_USER}" ]; then
     cp -r /root/.ssh ${NEW_USER_HOME}
     chown ${NEW_USER}:${NEW_USER} -R ${NEW_USER_HOME}/.ssh
 fi
+cat /etc/os-release | grep -Eqi "(ubuntu|debian)" && \
+    sed -i '/^%sudo/s/) ALL/) NOPASSWD:ALL/' /etc/sudoers \
+    || true
 
 # 3. set timezone
 timedatectl set-timezone Asia/Shanghai

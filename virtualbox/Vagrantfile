@@ -9,6 +9,8 @@ group = "templates"
 vms = {
   :centos7 => ['bento/centos-7', '1', '2048'],
   :centos8 => ['bento/centos-8', '1', '2048'],
+  :debian10 => ['bento/debian-10', '1', '2048'],
+  :debian11 => ['bento/debian-11', '1', '2048'],
   :ubuntu18 => ['bento/ubuntu-18.04', '1', '2048'],
   :ubuntu20 => ['bento/ubuntu-20.04', '1', '2048'],
 }
