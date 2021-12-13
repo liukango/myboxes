@@ -12,6 +12,8 @@ vms = {
   :debian11 => ['bento/debian-11', '1', '2048'],
   :ubuntu18 => ['bento/ubuntu-18.04', '1', '2048'],
   :ubuntu20 => ['bento/ubuntu-20.04', '1', '2048'],
+  # If specify private network IP address
+  #:with_ip => ['bento/ubuntu-20.04', '1', '2048', '10.3.3.3'],
 }
 
 # A new user you want to create on uid=666 and gid=666
@@ -68,6 +70,7 @@ Vagrant.configure("2") do |config|
       m.vm.hostname = "#{m_name}"
 
       # The second nic, the first one is "Share" network
+      # If specify IP address:
       # m.vm.network "private_network", ip: "#{m_config[3]}"
       m.vm.network "private_network", type: "dhcp"
 
